@@ -1,0 +1,2140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Betting Tracker</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel2: #1f2937;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --accent: #22c55e;
+      --danger: #ef4444;
+      --warn: #f59e0b;
+      --border: #374151;
+      --blue: #2563eb;
+      --overlay: rgba(2, 6, 23, 0.8);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #020617, #111827);
+      color: var(--text);
+      padding: 24px;
+    }
+
+    .container { max-width: 1320px; margin: 0 auto; }
+    h1 { margin: 0 0 8px; font-size: 32px; }
+    h2 { margin: 0 0 12px; font-size: 22px; }
+    h3 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      width: auto;
+      padding: 10px 16px;
+      border: 1px solid var(--border);
+      background: var(--panel2);
+      color: var(--text);
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .tab-btn.active {
+      background: var(--blue);
+      border-color: var(--blue);
+    }
+
+    .tab-page { display: none; }
+    .tab-page.active { display: block; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      background: rgba(17, 24, 39, 0.95);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    .section-box {
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .span4 { grid-column: span 4; }
+    .span6 { grid-column: span 6; }
+    .span8 { grid-column: span 8; }
+    .span12 { grid-column: span 12; }
+
+    @media (max-width: 950px) {
+      .span4, .span6, .span8, .span12 { grid-column: span 12; }
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .stat-value { font-size: 28px; font-weight: bold; }
+    .profit { color: var(--accent); }
+    .loss { color: var(--danger); }
+
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .label-with-required {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .required-star { color: var(--danger); font-weight: bold; }
+    .required-star.is-complete { color: var(--text); }
+
+    input, select, button, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel2);
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    input[readonly] { opacity: 0.95; }
+
+    .field-missing {
+      border-color: var(--danger) !important;
+      box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.28);
+    }
+
+    .field-complete {
+      border-color: var(--border) !important;
+      box-shadow: none;
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: bold;
+      border: none;
+    }
+
+    button.primary { background: var(--blue); }
+    button.success { background: #16a34a; }
+    button.secondary { background: #374151; }
+    button.danger { background: #b91c1c; }
+    button.win-btn { background: #15803d; }
+    button.loss-btn { background: #b91c1c; }
+    button.pending-btn { background: #a16207; }
+    button.override-btn { background: #6366f1; }
+    button.edit-btn { background: #2563eb; }
+    button.status-btn { background: #0f766e; }
+    button.moneyback-btn { background: #0f766e; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .form-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .full { grid-column: 1 / -1; }
+
+    @media (max-width: 820px) {
+      .form-grid, .form-grid-3 { grid-template-columns: 1fr; }
+    }
+
+    .points-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .points-grid button {
+      background: #1f2937;
+      font-size: 13px;
+    }
+
+    @media (max-width: 700px) {
+      .points-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .helper {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    .warning-box {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #fcd34d;
+      font-size: 13px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .toolbar button {
+      width: auto;
+      padding: 10px 14px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 4px;
+      flex-wrap: nowrap;
+      align-items: center;
+      white-space: nowrap;
+    }
+
+    .action-buttons button {
+      width: auto;
+      min-width: auto;
+      padding: 6px 8px;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .site-balance-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .site-balance-row {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(31, 41, 55, 0.45);
+    }
+
+    .site-balance-name { font-weight: bold; }
+    .site-balance-meta { color: var(--muted); font-size: 12px; }
+
+    @media (max-width: 900px) {
+      .site-balance-row { grid-template-columns: 1fr; }
+    }
+
+    .chart-wrap {
+      margin-top: 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      background: rgba(31, 41, 55, 0.4);
+    }
+
+    #profitChart {
+      width: 100%;
+      height: 300px;
+      display: block;
+    }
+
+    .bet-controls {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin: 10px 0 12px;
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(140px, 1fr));
+      gap: 8px;
+    }
+
+    @media (max-width: 900px) {
+      .search-row,
+      .filter-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .filter-pill-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+      min-height: 26px;
+    }
+
+    .filter-pill {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(37, 99, 235, 0.18);
+      color: #bfdbfe;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    mark.search-highlight {
+      background: rgba(245, 158, 11, 0.45);
+      color: var(--text);
+      border-radius: 4px;
+      padding: 0 2px;
+    }
+
+    th.sortable {
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    th.sortable:hover {
+      color: var(--text);
+    }
+
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 1120px;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: #374151;
+      text-transform: capitalize;
+      white-space: nowrap;
+    }
+
+    .tag.win { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+    .tag.loss { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+    .tag.pending { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+    .tag.fancy { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; }
+    .tag.overdue { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+    .tag.override { background: rgba(99, 102, 241, 0.2); color: #c7d2fe; }
+    .tag.moneyback { background: rgba(20, 184, 166, 0.2); color: #99f6e4; }
+
+    .overdue-row td { background: rgba(127, 29, 29, 0.12); }
+
+    .empty {
+      color: var(--muted);
+      padding: 12px 0 4px;
+    }
+
+    .edit-row {
+      display: grid;
+      gap: 8px;
+      min-width: 220px;
+    }
+
+    .edit-row input {
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+
+    .status-menu {
+      display: none;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(31, 41, 55, 0.95);
+    }
+
+    .status-menu.open {
+      display: flex;
+    }
+
+    .status-menu button {
+      width: auto;
+      min-width: 82px;
+      padding: 7px 10px;
+      font-size: 12px;
+    }
+
+    .status-modal-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(2, 6, 23, 0.78);
+      z-index: 999;
+    }
+
+    .status-modal-overlay.open {
+      display: flex;
+    }
+
+    .status-modal {
+      width: 100%;
+      max-width: 420px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    .status-modal-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .status-modal-subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }
+
+    .status-modal-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .status-modal-actions {
+      margin-top: 12px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .status-modal-actions button {
+      width: auto;
+      padding: 9px 13px;
+    }
+
+    .active-bet-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .active-bet-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: rgba(31, 41, 55, 0.45);
+    }
+
+    .active-bet-item.overdue {
+      border-color: rgba(239, 68, 68, 0.55);
+      background: rgba(127, 29, 29, 0.12);
+    }
+
+    .active-bet-title {
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .active-bet-meta {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .danger-panel {
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      background: rgba(127, 29, 29, 0.12);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--overlay);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 999;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 460px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .modal-actions button {
+      width: auto;
+      padding: 10px 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Betting Tracker</h1>
+    <div class="subtitle">Each bookmaker has its own bankroll. Points represent a percentage of that site's balance, and settled bets update only that bookmaker’s running balance.</div>
+
+    <div class="grid" style="margin-bottom: 18px;">
+      <div class="card span4">
+        <div class="stat-label">Total Current Balance</div>
+        <div class="stat-value" id="totalCurrentBalance">£0.00</div>
+      </div>
+      <div class="card span4">
+        <div class="stat-label">Total Starting Balance</div>
+        <div class="stat-value" id="totalStartingBalance">£0.00</div>
+      </div>
+      <div class="card span4">
+        <div class="stat-label">Overall Profit / Loss</div>
+        <div class="stat-value" id="overallPL">£0.00</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+      <button class="tab-btn" data-tab="bets">All Bets</button>
+      <button class="tab-btn" data-tab="analytics">Analytics</button>
+      <button class="tab-btn" data-tab="data">Data</button>
+    </div>
+
+    <div id="tab-dashboard" class="tab-page active">
+      <div class="grid">
+        <div class="card span6">
+          <h2>Set Site Balance</h2>
+          <div class="form-grid-3">
+            <div>
+              <label for="balanceSiteSelect" class="label-with-required">Bookmaker <span class="required-star" data-required-for="balanceSiteSelect">*</span></label>
+              <select id="balanceSiteSelect"></select>
+            </div>
+            <div>
+              <label for="balanceInput" class="label-with-required">Balance <span class="required-star" data-required-for="balanceInput">*</span></label>
+              <input id="balanceInput" type="number" min="0" step="0.01" value="0" />
+            </div>
+            <div>
+              <label>&nbsp;</label>
+              <button type="button" class="primary" id="setSiteBalanceBtn">Set Site Balance</button>
+            </div>
+          </div>
+          <div class="helper">The first time you set a bookmaker it becomes both the starting and current balance. After that, it updates the current balance only.</div>
+          <div class="site-balance-list" id="siteBalanceList"></div>
+        </div>
+
+        <div class="card span6">
+          <h2>Point Calculator</h2>
+          <div class="form-grid">
+            <div>
+              <label for="quickSite" class="label-with-required">Bookmaker <span class="required-star" data-required-for="quickSite">*</span></label>
+              <select id="quickSite"></select>
+            </div>
+            <div>
+              <label for="quickPoints">Points</label>
+              <input id="quickPoints" type="number" min="0" step="0.01" value="1" />
+            </div>
+            <div class="full">
+              <label for="quickStake">Stake</label>
+              <input id="quickStake" type="text" readonly placeholder="Select a bookmaker" />
+            </div>
+          </div>
+          <div class="helper">Stake is based on the selected bookmaker balance only.</div>
+          <div class="points-grid" id="pointsButtons"></div>
+        </div>
+
+        <div class="card span8">
+          <h2>Add Bet</h2>
+
+          <div class="section-box">
+            <h3>Bet</h3>
+            <div class="form-grid-3">
+              <div>
+                <label for="betType" class="label-with-required">Bet Type <span class="required-star" data-required-for="betType">*</span></label>
+                <select id="betType">
+                  <option value="">None</option>
+                  <option value="standard">Standard</option>
+                  <option value="fancy">Fancy</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="betSite" class="label-with-required">Bookmaker <span class="required-star" data-required-for="betSite">*</span></label>
+                <select id="betSite"></select>
+              </div>
+
+              <div>
+                <label for="betName" class="label-with-required">Selection <span class="required-star" data-required-for="betName">*</span></label>
+                <input id="betName" type="text" placeholder="Team / Horse / Market" />
+              </div>
+
+              <div>
+                <label for="betDate" class="label-with-required">Event Date &amp; Time <span class="required-star" data-required-for="betDate">*</span></label>
+                <input id="betDate" type="datetime-local" />
+              </div>
+
+              <div>
+                <label for="betStatus">Status</label>
+                <select id="betStatus">
+                  <option value="pending">Pending</option>
+                  <option value="win">Win</option>
+                  <option value="loss">Loss</option>
+                  <option value="moneyback">Money Back</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-box">
+            <h3>Odds</h3>
+            <div class="form-grid">
+              <div>
+                <label for="oddsFormat">Odds Format</label>
+                <select id="oddsFormat">
+                  <option value="fractional">Fractional</option>
+                  <option value="decimal">Decimal</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="betOdds" class="label-with-required">Odds <span class="required-star" data-required-for="betOdds">*</span></label>
+                <input id="betOdds" type="text" placeholder="1/1 or 2.00" />
+              </div>
+            </div>
+          </div>
+
+          <div class="section-box">
+            <h3>Points</h3>
+            <div class="form-grid">
+              <div>
+                <label for="betPoints" class="label-with-required">Points <span class="required-star" data-required-for="betPointsGroup">*</span></label>
+                <select id="betPoints"></select>
+              </div>
+
+              <div>
+                <label for="betPointsCustom">Custom Points</label>
+                <input id="betPointsCustom" type="number" min="0.25" step="0.25" placeholder="Optional override" />
+              </div>
+
+              <div>
+                <label for="betStakeOverride">Stake Amount (£)</label>
+                <input id="betStakeOverride" type="number" min="0.01" step="0.01" placeholder="Optional cash stake" />
+              </div>
+            </div>
+
+            <div class="helper" id="calculatedStakeText">Stake: £0.00</div>
+            <div class="warning-box">Use either the points dropdown, custom points, or a cash stake. If you enter a cash stake, the tracker will calculate the equivalent points from that bookmaker’s current balance. Use Money Back for stake-return bets where profit/loss is £0.</div>
+          </div>
+
+          <button type="button" class="success" id="addBetBtn">Add Bet</button>
+        </div>
+
+        <div class="card span4">
+          <h2>Active / Overdue Bets</h2>
+          <div class="helper">The dashboard only shows bets that are still pending so the main page stays uncluttered.</div>
+          <div id="activeTableWrap"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-bets" class="tab-page">
+      <div class="grid">
+        <div class="card span12">
+          <h2>All Bets</h2>
+          <div class="bet-controls">
+            <div class="search-row">
+              <div>
+                <label for="betSearch">Search All Bets</label>
+                <input id="betSearch" type="search" placeholder="Search selection, site, status, type, odds, stake..." />
+              </div>
+              <button type="button" class="secondary" id="clearBetFiltersBtn">Clear Filters</button>
+            </div>
+
+            <div class="filter-grid">
+              <div>
+                <label for="filterSite">Site</label>
+                <select id="filterSite"></select>
+              </div>
+              <div>
+                <label for="filterStatus">Status</label>
+                <select id="filterStatus"></select>
+              </div>
+              <div>
+                <label for="filterType">Type</label>
+                <select id="filterType"></select>
+              </div>
+              <div>
+                <label for="filterMinDate">From Event Date</label>
+                <input id="filterMinDate" type="date" />
+              </div>
+              <div>
+                <label for="filterMaxDate">To Event Date</label>
+                <input id="filterMaxDate" type="date" />
+              </div>
+            </div>
+
+            <div class="filter-pill-row" id="filterBreadcrumb"></div>
+          </div>
+          <div id="tableWrap"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-analytics" class="tab-page">
+      <div class="grid">
+        <div class="card span12">
+          <h2>Balance Over Time</h2>
+          <div class="helper">Your bankroll movement across all bookmakers.</div>
+          <div class="chart-wrap">
+            <canvas id="profitChart" width="900" height="300"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-data" class="tab-page">
+      <div class="grid">
+        <div class="card span8">
+          <h2>Data Management</h2>
+          <div class="helper">Your data is stored automatically in your browser on this device using localStorage. Export a backup whenever you want a copy you can move elsewhere.</div>
+          <div class="toolbar">
+            <button type="button" class="secondary" id="exportBtn">Export Data</button>
+            <button type="button" class="secondary" id="importBtn">Import Data</button>
+            <input id="importFile" type="file" accept="application/json" hidden />
+          </div>
+          <div class="section-box">
+            <h3>How storage works</h3>
+            <div class="helper">
+              Data is saved automatically in your browser. You do not need to export every time just to keep your own data on the same browser and same site URL.
+              Export is mainly for backup, moving to another browser/device, or restoring after clearing data.
+            </div>
+          </div>
+        </div>
+
+        <div class="card span4">
+          <h2>Danger Zone</h2>
+          <div class="danger-panel">
+            <div class="helper">Clearing all data removes site balances, bet history, and the saved active tab from browser storage for this site.</div>
+            <div style="margin-top: 12px;">
+              <button type="button" class="danger" id="openClearModalBtn">Clear All Data</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="clearModal">
+    <div class="modal">
+      <h2>Clear All Data</h2>
+      <div class="helper">Type <strong>CONFIRM</strong> exactly to delete all saved data for this site from your browser.</div>
+      <div style="margin-top: 12px;">
+        <label for="confirmClearInput">Confirmation</label>
+        <input id="confirmClearInput" type="text" placeholder="Type CONFIRM" />
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="danger" id="confirmClearBtn">Delete Everything</button>
+        <button type="button" class="secondary" id="cancelClearBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-modal-overlay" id="statusModal">
+    <div class="status-modal" role="dialog" aria-modal="true" aria-labelledby="statusModalTitle">
+      <div class="status-modal-title" id="statusModalTitle">Update Bet Status</div>
+      <div class="status-modal-subtitle" id="statusModalSubtitle">Choose the result for this bet.</div>
+      <div class="status-modal-grid">
+        <button type="button" class="win-btn" data-modal-status="win">Win</button>
+        <button type="button" class="loss-btn" data-modal-status="loss">Loss</button>
+        <button type="button" class="pending-btn" data-modal-status="pending">Pending</button>
+        <button type="button" class="moneyback-btn" data-modal-status="moneyback">MB</button>
+      </div>
+      <div class="status-modal-actions">
+        <button type="button" class="secondary" id="cancelStatusModalBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const storageKey = 'betting_tracker_v11';
+
+    const sites = [
+      'Bet365', 'William Hill', 'Ladbrokes', 'Coral', 'Betfair', 'Paddy Power',
+      'Sky Bet', 'Unibet', 'Betway', '888Sport', 'BetVictor', 'SBK', '10Bet',
+      'Betfred', 'SpreadEx', 'LeoVegas', 'BoyleSports', 'BetUK', 'Sporting Index',
+      'BetGoodwin', 'Matchbook', 'Betdaq'
+    ];
+
+    const pointValues = [0.25, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+    const state = {
+      siteBalances: {},
+      bets: [],
+      activeTab: 'dashboard',
+      betSearch: '',
+      betFilters: {
+        site: '',
+        status: '',
+        type: '',
+        minDate: '',
+        maxDate: ''
+      },
+      betSort: {
+        key: 'date',
+        direction: 'desc'
+      },
+      editingBetIndex: null,
+      pendingStatusIndex: null
+    };
+
+    const els = {
+      requiredStars: document.querySelectorAll('[data-required-for]'),
+      tabButtons: document.querySelectorAll('.tab-btn'),
+      tabPages: document.querySelectorAll('.tab-page'),
+      totalCurrentBalance: document.getElementById('totalCurrentBalance'),
+      totalStartingBalance: document.getElementById('totalStartingBalance'),
+      overallPL: document.getElementById('overallPL'),
+      balanceSiteSelect: document.getElementById('balanceSiteSelect'),
+      balanceInput: document.getElementById('balanceInput'),
+      setSiteBalanceBtn: document.getElementById('setSiteBalanceBtn'),
+      siteBalanceList: document.getElementById('siteBalanceList'),
+      quickSite: document.getElementById('quickSite'),
+      quickPoints: document.getElementById('quickPoints'),
+      quickStake: document.getElementById('quickStake'),
+      pointsButtons: document.getElementById('pointsButtons'),
+      betName: document.getElementById('betName'),
+      betSite: document.getElementById('betSite'),
+      betType: document.getElementById('betType'),
+      betPoints: document.getElementById('betPoints'),
+      betPointsCustom: document.getElementById('betPointsCustom'),
+      betStakeOverride: document.getElementById('betStakeOverride'),
+      oddsFormat: document.getElementById('oddsFormat'),
+      betOdds: document.getElementById('betOdds'),
+      betDate: document.getElementById('betDate'),
+      betStatus: document.getElementById('betStatus'),
+      calculatedStakeText: document.getElementById('calculatedStakeText'),
+      addBetBtn: document.getElementById('addBetBtn'),
+      activeTableWrap: document.getElementById('activeTableWrap'),
+      tableWrap: document.getElementById('tableWrap'),
+      betSearch: document.getElementById('betSearch'),
+      clearBetFiltersBtn: document.getElementById('clearBetFiltersBtn'),
+      filterSite: document.getElementById('filterSite'),
+      filterStatus: document.getElementById('filterStatus'),
+      filterType: document.getElementById('filterType'),
+      filterMinDate: document.getElementById('filterMinDate'),
+      filterMaxDate: document.getElementById('filterMaxDate'),
+      filterBreadcrumb: document.getElementById('filterBreadcrumb'),
+      exportBtn: document.getElementById('exportBtn'),
+      importBtn: document.getElementById('importBtn'),
+      importFile: document.getElementById('importFile'),
+      profitChart: document.getElementById('profitChart'),
+      statusModal: document.getElementById('statusModal'),
+      statusModalSubtitle: document.getElementById('statusModalSubtitle'),
+      cancelStatusModalBtn: document.getElementById('cancelStatusModalBtn'),
+      openClearModalBtn: document.getElementById('openClearModalBtn'),
+      clearModal: document.getElementById('clearModal'),
+      confirmClearInput: document.getElementById('confirmClearInput'),
+      confirmClearBtn: document.getElementById('confirmClearBtn'),
+      cancelClearBtn: document.getElementById('cancelClearBtn')
+    };
+
+    function formatMoney(value) {
+      return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(Number(value || 0));
+    }
+
+    function toNumber(value) {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function roundPoints(value) {
+      const n = Number(value);
+      return Number.isFinite(n) ? Number(n.toFixed(1)) : 0;
+    }
+
+    function formatPoints(value) {
+      return roundPoints(value).toFixed(1);
+    }
+
+    function getActiveSites() {
+      return sites.filter((site) => {
+        const balance = state.siteBalances[site];
+        return balance && Number(balance.current) > 0;
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function parseOdds(raw, format) {
+      const value = String(raw || '').trim();
+      if (!value) return NaN;
+
+      if (format === 'fractional') {
+        if (!value.includes('/')) return NaN;
+        const [top, bottom] = value.split('/').map(Number);
+        if (!Number.isFinite(top) || !Number.isFinite(bottom) || bottom === 0) return NaN;
+        return (top / bottom) + 1;
+      }
+
+      const decimal = Number(value);
+      return Number.isFinite(decimal) ? decimal : NaN;
+    }
+
+    function calcProfit(stake, odds, status) {
+      if (status === 'win') return stake * (odds - 1);
+      if (status === 'loss') return -stake;
+      if (status === 'moneyback') return 0;
+      return 0;
+    }
+
+    function calcPotentialReturn(bet) {
+      return toNumber(bet.stake) * (toNumber(bet.odds) - 1);
+    }
+
+    function ensureSiteBalance(site) {
+      if (!site) return null;
+      if (!state.siteBalances[site]) {
+        state.siteBalances[site] = { starting: 0, current: 0 };
+      }
+      return state.siteBalances[site];
+    }
+
+    function readSiteBalance(site) {
+      if (!site) return null;
+      return state.siteBalances[site] || null;
+    }
+
+    function getSiteBalance(site) {
+      const balance = readSiteBalance(site);
+      return balance ? toNumber(balance.current) : 0;
+    }
+
+    function getTotalStartingBalance() {
+      return Object.values(state.siteBalances).reduce((sum, item) => sum + toNumber(item.starting), 0);
+    }
+
+    function getTotalCurrentBalance() {
+      return Object.values(state.siteBalances).reduce((sum, item) => sum + toNumber(item.current), 0);
+    }
+
+    function calcStakeForSite(site, points) {
+      return getSiteBalance(site) * (toNumber(points) / 100);
+    }
+
+    function getEnteredStakeAmount() {
+      const raw = String(els.betStakeOverride.value || '').trim();
+      if (raw === '') return null;
+      const value = Number(raw);
+      return Number.isFinite(value) && value > 0 ? value : NaN;
+    }
+
+    function getSelectedBetPoints() {
+      const stakeAmount = typeof getEnteredStakeAmount === 'function' ? getEnteredStakeAmount() : null;
+      if (stakeAmount !== null) {
+        const site = els.betSite.value;
+        const siteBalance = getSiteBalance(site);
+        if (!site || siteBalance <= 0 || !Number.isFinite(stakeAmount)) return NaN;
+        return roundPoints((stakeAmount / siteBalance) * 100);
+      }
+
+      const custom = String(els.betPointsCustom.value || '').trim();
+      if (custom !== '') return roundPoints(Number(custom));
+      return roundPoints(Number(els.betPoints.value));
+    }
+
+    function getSelectedStake(site, points) {
+      const stakeAmount = getEnteredStakeAmount();
+      if (stakeAmount !== null && Number.isFinite(stakeAmount) && stakeAmount > 0) {
+        return stakeAmount;
+      }
+      return calcStakeForSite(site, points);
+    }
+
+    function hasValidSelectionValue(value) {
+      return String(value || '').trim() !== '';
+    }
+
+    function hasValidNonNegativeNumberValue(value) {
+      const num = Number(value);
+      return Number.isFinite(num) && num >= 0;
+    }
+
+    function hasValidPositiveNumberValue(value) {
+      const num = Number(value);
+      return Number.isFinite(num) && num > 0;
+    }
+
+    function getRequiredFieldState(key) {
+      switch (key) {
+        case 'balanceSiteSelect':
+          return { complete: hasValidSelectionValue(els.balanceSiteSelect.value), elements: [els.balanceSiteSelect] };
+        case 'balanceInput':
+          return { complete: hasValidNonNegativeNumberValue(els.balanceInput.value), elements: [els.balanceInput] };
+        case 'quickSite':
+          return { complete: hasValidSelectionValue(els.quickSite.value), elements: [els.quickSite] };
+        case 'betName':
+          return { complete: hasValidSelectionValue(els.betName.value), elements: [els.betName] };
+        case 'betSite':
+          return { complete: hasValidSelectionValue(els.betSite.value), elements: [els.betSite] };
+        case 'betType':
+          return { complete: hasValidSelectionValue(els.betType.value), elements: [els.betType] };
+        case 'betPointsGroup': {
+          const stakeFilled = String(els.betStakeOverride.value || '').trim() !== '';
+          const stakeValid = hasValidPositiveNumberValue(els.betStakeOverride.value);
+          const customFilled = String(els.betPointsCustom.value || '').trim() !== '';
+          const customValid = hasValidPositiveNumberValue(els.betPointsCustom.value);
+          const selectValid = hasValidSelectionValue(els.betPoints.value);
+          return { complete: stakeFilled ? stakeValid : (customFilled ? customValid : selectValid), elements: [els.betPoints, els.betPointsCustom, els.betStakeOverride] };
+        }
+        case 'betOdds':
+          return { complete: hasValidSelectionValue(els.betOdds.value), elements: [els.betOdds] };
+        case 'betDate':
+          return { complete: hasValidSelectionValue(els.betDate.value), elements: [els.betDate] };
+        default:
+          return { complete: true, elements: [] };
+      }
+    }
+
+    function updateRequiredIndicators() {
+      els.requiredStars.forEach((star) => {
+        const key = star.getAttribute('data-required-for');
+        const fieldState = getRequiredFieldState(key);
+        star.classList.toggle('is-complete', fieldState.complete);
+        fieldState.elements.forEach((element) => {
+          element.classList.remove('field-missing', 'field-complete');
+          element.classList.add(fieldState.complete ? 'field-complete' : 'field-missing');
+        });
+      });
+    }
+
+    function saveState() {
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    }
+
+    function loadState() {
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) return;
+
+      try {
+        const parsed = JSON.parse(raw);
+        state.siteBalances = parsed.siteBalances && typeof parsed.siteBalances === 'object' ? parsed.siteBalances : {};
+        state.bets = Array.isArray(parsed.bets) ? parsed.bets : [];
+        state.activeTab = typeof parsed.activeTab === 'string' ? parsed.activeTab : 'dashboard';
+        state.betSearch = typeof parsed.betSearch === 'string' ? parsed.betSearch : '';
+        state.betFilters = parsed.betFilters && typeof parsed.betFilters === 'object'
+          ? { site: parsed.betFilters.site || '', status: parsed.betFilters.status || '', type: parsed.betFilters.type || '', minDate: parsed.betFilters.minDate || '', maxDate: parsed.betFilters.maxDate || '' }
+          : { site: '', status: '', type: '', minDate: '', maxDate: '' };
+        state.betSort = parsed.betSort && typeof parsed.betSort === 'object'
+          ? { key: parsed.betSort.key || 'date', direction: parsed.betSort.direction === 'asc' ? 'asc' : 'desc' }
+          : { key: 'date', direction: 'desc' };
+        state.editingBetIndex = null;
+        state.pendingStatusIndex = null;
+      } catch (err) {
+        console.error('Failed to load saved data', err);
+      }
+    }
+
+    function fillSiteSelect(selectEl, options = {}) {
+      const previous = selectEl.value;
+      const activeOnly = options.activeOnly === true;
+      const availableSites = activeOnly ? getActiveSites() : sites;
+
+      selectEl.innerHTML = '';
+
+      const noneOption = document.createElement('option');
+      noneOption.value = '';
+      noneOption.textContent = 'None';
+      selectEl.appendChild(noneOption);
+
+      availableSites.forEach((site) => {
+        const option = document.createElement('option');
+        option.value = site;
+        option.textContent = site;
+        selectEl.appendChild(option);
+      });
+
+      selectEl.value = availableSites.includes(previous) ? previous : '';
+    }
+
+    function refreshActiveSiteSelects() {
+      fillSiteSelect(els.quickSite, { activeOnly: true });
+      fillSiteSelect(els.betSite, { activeOnly: true });
+    }
+
+    function initPointSelect() {
+      els.betPoints.innerHTML = '';
+
+      const none = document.createElement('option');
+      none.value = '';
+      none.textContent = 'None';
+      els.betPoints.appendChild(none);
+
+      pointValues.forEach((value) => {
+        const option = document.createElement('option');
+        option.value = String(value);
+        option.textContent = `${value} pt${value === 1 ? '' : 's'}`;
+        els.betPoints.appendChild(option);
+      });
+    }
+
+    function setSiteBalance() {
+      const site = els.balanceSiteSelect.value;
+      const value = Number(els.balanceInput.value);
+      updateRequiredIndicators();
+
+      if (!site) return alert('Please select a bookmaker.');
+      if (!Number.isFinite(value) || value < 0) return alert('Please enter a valid balance of 0 or more.');
+
+      const existingBalance = readSiteBalance(site);
+      const balance = ensureSiteBalance(site);
+
+      if (!existingBalance) balance.starting = value;
+      balance.current = value;
+
+      els.balanceSiteSelect.value = '';
+      els.balanceInput.value = '0';
+
+      saveState();
+      refreshActiveSiteSelects();
+      renderAll();
+    }
+
+    function updateQuickStake() {
+      const site = els.quickSite.value;
+      const points = toNumber(els.quickPoints.value);
+
+      if (!site) {
+        els.quickStake.value = '';
+        els.quickStake.placeholder = 'Select a bookmaker';
+        return;
+      }
+
+      els.quickStake.placeholder = '';
+      els.quickStake.value = `${formatMoney(calcStakeForSite(site, points))} from ${site}`;
+    }
+
+    function updateBetPreview() {
+      const site = els.betSite.value;
+      const type = els.betType.value;
+      const points = getSelectedBetPoints();
+
+      if (!site) {
+        els.calculatedStakeText.textContent = 'Stake: Select a bookmaker first.';
+        return;
+      }
+
+      if (!Number.isFinite(points) || points <= 0) {
+        els.calculatedStakeText.textContent = `Stake: Select points for ${site}.`;
+        return;
+      }
+
+      const stake = getSelectedStake(site, points);
+      let text = `Stake: ${formatMoney(getSelectedStake(site, points))} from ${site} — ${formatPoints(points)} pts`;
+      if (getEnteredStakeAmount() !== null) {
+        text += ' calculated from cash stake';
+      }
+      if (type === 'fancy' && points > 2) {
+        text += ' — Fancy bets are usually kept around 1–2 points.';
+      }
+      els.calculatedStakeText.textContent = text;
+    }
+
+    function renderStats() {
+      const starting = getTotalStartingBalance();
+      const current = getTotalCurrentBalance();
+      const pl = current - starting;
+
+      els.totalStartingBalance.textContent = formatMoney(starting);
+      els.totalCurrentBalance.textContent = formatMoney(current);
+      els.overallPL.textContent = formatMoney(pl);
+      els.overallPL.className = 'stat-value ' + (pl < 0 ? 'loss' : 'profit');
+    }
+
+    function renderSiteBalances() {
+      const rows = sites
+        .filter((site) => Object.prototype.hasOwnProperty.call(state.siteBalances, site))
+        .map((site) => {
+          const balance = state.siteBalances[site];
+          const pl = toNumber(balance.current) - toNumber(balance.starting);
+          const plClass = pl < 0 ? 'loss' : 'profit';
+          return `
+            <div class="site-balance-row">
+              <div>
+                <div class="site-balance-name">${escapeHtml(site)}</div>
+                <div class="site-balance-meta">Starting ${formatMoney(balance.starting)} · Current ${formatMoney(balance.current)}</div>
+              </div>
+              <div class="${plClass}">${formatMoney(pl)}</div>
+              <div><button type="button" class="secondary" data-load-site-balance="${escapeHtml(site)}">Load</button></div>
+              <div><button type="button" class="danger" data-reset-site-balance="${escapeHtml(site)}">Reset</button></div>
+            </div>
+          `;
+        })
+        .join('');
+
+      els.siteBalanceList.innerHTML = rows || '<div class="empty">No site balances set yet.</div>';
+    }
+
+    function getBetProfit(bet, statusOverride = bet.status) {
+      if (bet.isManualOverride && statusOverride === bet.status) {
+        return toNumber(bet.profit);
+      }
+      return calcProfit(toNumber(bet.stake), toNumber(bet.odds), statusOverride);
+    }
+
+    function isBetOverdue(bet) {
+      return bet.status === 'pending' && bet.date && new Date(bet.date).getTime() < Date.now();
+    }
+
+    function renderActiveTable() {
+      const activeBets = state.bets.filter((bet) => bet.status === 'pending');
+
+      if (!activeBets.length) {
+        els.activeTableWrap.innerHTML = '<div class="empty">No active bets.</div>';
+        return;
+      }
+
+      const sorted = [...activeBets].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+      const items = sorted.map((bet) => {
+        const overdue = isBetOverdue(bet);
+        return `
+          <div class="active-bet-item ${overdue ? 'overdue' : ''}">
+            <div class="active-bet-title">${escapeHtml(bet.name)} ${overdue ? '<span class="tag overdue">overdue</span>' : '<span class="tag pending">pending</span>'}</div>
+            <div class="active-bet-meta">
+              ${escapeHtml(bet.site)} · ${formatPoints(bet.points)} pts · Stake ${formatMoney(bet.stake)} · Odds ${escapeHtml(bet.oddsRaw)}<br>
+              Event: ${bet.date ? new Date(bet.date).toLocaleString('en-GB') : '-'}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      els.activeTableWrap.innerHTML = `<div class="active-bet-list">${items}</div>`;
+    }
+
+
+    function getStatusLabel(status) {
+      if (status === 'moneyback') return 'MB';
+      return status || '';
+    }
+
+    function normaliseForSearch(value) {
+      return String(value ?? '').toLowerCase();
+    }
+
+    function highlightText(value, query) {
+      const text = escapeHtml(value ?? '');
+      const q = String(query || '').trim();
+      if (!q) return text;
+
+      const escapedQuery = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return text.replace(new RegExp(escapedQuery, 'gi'), (match) => `<mark class="search-highlight">${match}</mark>`);
+    }
+
+    function getBetSearchText(bet) {
+      return [
+        bet.name,
+        bet.site,
+        bet.type,
+        getStatusLabel(bet.status),
+        bet.status,
+        bet.points,
+        bet.stake,
+        calcPotentialReturn(bet),
+        bet.oddsRaw,
+        bet.profit,
+        bet.date ? new Date(bet.date).toLocaleString('en-GB') : ''
+      ].join(' ');
+    }
+
+    function getFilteredBetsWithIndex() {
+      const query = state.betSearch.trim().toLowerCase();
+      let rows = state.bets.map((bet, index) => ({ bet, index }));
+
+      if (query) {
+        rows = rows.filter(({ bet }) => normaliseForSearch(getBetSearchText(bet)).includes(query));
+      }
+
+      if (state.betFilters.site) {
+        rows = rows.filter(({ bet }) => bet.site === state.betFilters.site);
+      }
+
+      if (state.betFilters.status) {
+        rows = rows.filter(({ bet }) => bet.status === state.betFilters.status);
+      }
+
+      if (state.betFilters.type) {
+        rows = rows.filter(({ bet }) => bet.type === state.betFilters.type);
+      }
+
+      if (state.betFilters.minDate) {
+        const minTime = new Date(`${state.betFilters.minDate}T00:00`).getTime();
+        rows = rows.filter(({ bet }) => bet.date && new Date(bet.date).getTime() >= minTime);
+      }
+
+      if (state.betFilters.maxDate) {
+        const maxTime = new Date(`${state.betFilters.maxDate}T23:59:59`).getTime();
+        rows = rows.filter(({ bet }) => bet.date && new Date(bet.date).getTime() <= maxTime);
+      }
+
+      const key = state.betSort.key;
+      const direction = state.betSort.direction === 'asc' ? 1 : -1;
+
+      rows.sort((a, b) => {
+        const av = getSortValue(a.bet, key);
+        const bv = getSortValue(b.bet, key);
+
+        if (typeof av === 'number' && typeof bv === 'number') {
+          return (av - bv) * direction;
+        }
+
+        return String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: 'base' }) * direction;
+      });
+
+      return rows;
+    }
+
+    function getSortValue(bet, key) {
+      switch (key) {
+        case 'date': return bet.date ? new Date(bet.date).getTime() : 0;
+        case 'name': return bet.name || '';
+        case 'site': return bet.site || '';
+        case 'type': return bet.type || '';
+        case 'points': return toNumber(bet.points);
+        case 'stake': return toNumber(bet.stake);
+        case 'return': return calcPotentialReturn(bet);
+        case 'odds': return toNumber(bet.odds);
+        case 'status': return getStatusLabel(bet.status);
+        case 'profit': return toNumber(bet.profit);
+        default: return '';
+      }
+    }
+
+    function sortIndicator(key) {
+      if (state.betSort.key !== key) return '';
+      return state.betSort.direction === 'asc' ? ' ▲' : ' ▼';
+    }
+
+    function setBetSort(key) {
+      if (state.betSort.key === key) {
+        state.betSort.direction = state.betSort.direction === 'asc' ? 'desc' : 'asc';
+      } else {
+        state.betSort.key = key;
+        state.betSort.direction = key === 'date' ? 'desc' : 'asc';
+      }
+      saveState();
+      renderAll();
+    }
+
+    function populateBetFilters() {
+      const siteValue = state.betFilters.site;
+      const statusValue = state.betFilters.status;
+      const typeValue = state.betFilters.type;
+
+      const uniqueSites = [...new Set(state.bets.map((bet) => bet.site).filter(Boolean))].sort();
+      const uniqueStatuses = [...new Set(state.bets.map((bet) => bet.status).filter(Boolean))].sort();
+      const uniqueTypes = [...new Set(state.bets.map((bet) => bet.type).filter(Boolean))].sort();
+
+      fillFilterSelect(els.filterSite, uniqueSites, 'All Sites');
+      fillFilterSelect(els.filterStatus, uniqueStatuses, 'All Statuses', getStatusLabel);
+      fillFilterSelect(els.filterType, uniqueTypes, 'All Types');
+
+      els.filterSite.value = uniqueSites.includes(siteValue) ? siteValue : '';
+      els.filterStatus.value = uniqueStatuses.includes(statusValue) ? statusValue : '';
+      els.filterType.value = uniqueTypes.includes(typeValue) ? typeValue : '';
+      els.filterMinDate.value = state.betFilters.minDate || '';
+      els.filterMaxDate.value = state.betFilters.maxDate || '';
+      els.betSearch.value = state.betSearch || '';
+    }
+
+    function fillFilterSelect(selectEl, values, allLabel, labelFn = (value) => value) {
+      selectEl.innerHTML = '';
+      const all = document.createElement('option');
+      all.value = '';
+      all.textContent = allLabel;
+      selectEl.appendChild(all);
+
+      values.forEach((value) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = labelFn(value);
+        selectEl.appendChild(option);
+      });
+    }
+
+    function renderFilterBreadcrumb(resultCount) {
+      const pills = [];
+      if (state.betSearch.trim()) pills.push(`Search: "${escapeHtml(state.betSearch.trim())}"`);
+      if (state.betFilters.site) pills.push(`Site: ${escapeHtml(state.betFilters.site)}`);
+      if (state.betFilters.status) pills.push(`Status: ${escapeHtml(getStatusLabel(state.betFilters.status))}`);
+      if (state.betFilters.type) pills.push(`Type: ${escapeHtml(state.betFilters.type)}`);
+      if (state.betFilters.minDate) pills.push(`From: ${escapeHtml(state.betFilters.minDate)}`);
+      if (state.betFilters.maxDate) pills.push(`To: ${escapeHtml(state.betFilters.maxDate)}`);
+
+      const summary = `<span class="filter-pill">${resultCount} of ${state.bets.length} bets shown</span>`;
+      const filterPills = pills.map((pill) => `<span class="filter-pill">${pill}</span>`).join('');
+      els.filterBreadcrumb.innerHTML = summary + filterPills;
+    }
+
+    function clearBetFilters() {
+      state.betSearch = '';
+      state.betFilters = { site: '', status: '', type: '', minDate: '', maxDate: '' };
+      saveState();
+      renderAll();
+    }
+
+    function renderTable() {
+      populateBetFilters();
+
+      if (!state.bets.length) {
+        renderFilterBreadcrumb(0);
+        els.tableWrap.innerHTML = '<div class="empty">No bets yet.</div>';
+        return;
+      }
+
+      const filteredRows = getFilteredBetsWithIndex();
+      renderFilterBreadcrumb(filteredRows.length);
+
+      if (!filteredRows.length) {
+        els.tableWrap.innerHTML = '<div class="empty">No bets match your current search or filters.</div>';
+        return;
+      }
+
+      const rows = filteredRows.map(({ bet, index }) => {
+        const typeTag = bet.type === 'fancy' ? '<span class="tag fancy">fancy</span>' : '<span class="tag">standard</span>';
+        const profitClass = bet.profit < 0 ? 'loss' : bet.profit > 0 ? 'profit' : '';
+        const overdueTag = isBetOverdue(bet) ? ' <span class="tag overdue">overdue</span>' : '';
+        const overrideTag = bet.isManualOverride ? ' <span class="tag override">override</span>' : '';
+        const rowClass = isBetOverdue(bet) ? 'overdue-row' : '';
+        const isEditing = state.editingBetIndex === index;
+        const search = state.betSearch.trim();
+
+        const timeCell = isEditing
+          ? `<div class="edit-row"><input type="datetime-local" id="editDate-${index}" value="${escapeHtml(bet.date || '')}"></div>`
+          : `${bet.date ? highlightText(new Date(bet.date).toLocaleString('en-GB'), search) : '-'}`;
+
+        const nameCell = isEditing
+          ? `<div class="edit-row"><input type="text" id="editName-${index}" value="${escapeHtml(bet.name || '')}"></div>`
+          : highlightText(bet.name || '', search);
+
+        const editControls = isEditing
+          ? `<button type="button" class="success" data-save-edit-index="${index}">Save</button>
+             <button type="button" class="secondary" data-cancel-edit="true">Cancel</button>`
+          : `<button type="button" class="edit-btn" data-edit-index="${index}">Edit</button>`;
+
+        const statusButton = `<button type="button" class="status-btn" data-open-status-modal="${index}">Status</button>`;
+
+        return `
+          <tr class="${rowClass}">
+            <td>${timeCell}</td>
+            <td>${nameCell}</td>
+            <td>${highlightText(bet.site, search)}</td>
+            <td>${typeTag}</td>
+            <td>${typeof formatPoints === 'function' ? formatPoints(bet.points) : bet.points}</td>
+            <td>${formatMoney(bet.stake)}${bet.stakeEnteredManually ? ' <span class="tag override">cash</span>' : ''}</td>
+            <td>${formatMoney(calcPotentialReturn(bet))}</td>
+            <td>${highlightText(bet.oddsRaw, search)}</td>
+            <td><span class="tag ${bet.status}">${getStatusLabel(bet.status)}</span>${overdueTag}${overrideTag}</td>
+            <td class="${profitClass}">${formatMoney(bet.profit)}</td>
+            <td>
+              <div class="action-buttons">
+                ${editControls}
+                ${statusButton}
+                <button type="button" class="override-btn" data-override-index="${index}">Override</button>
+                <button type="button" class="danger" data-delete-index="${index}">Delete</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      els.tableWrap.innerHTML = `
+        <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="sortable" data-sort-key="date">Event Time${sortIndicator('date')}</th>
+              <th class="sortable" data-sort-key="name">Selection${sortIndicator('name')}</th>
+              <th class="sortable" data-sort-key="site">Site${sortIndicator('site')}</th>
+              <th class="sortable" data-sort-key="type">Type${sortIndicator('type')}</th>
+              <th class="sortable" data-sort-key="points">Pts${sortIndicator('points')}</th>
+              <th class="sortable" data-sort-key="stake">Stake${sortIndicator('stake')}</th>
+              <th class="sortable" data-sort-key="return">Return${sortIndicator('return')}</th>
+              <th class="sortable" data-sort-key="odds">Odds${sortIndicator('odds')}</th>
+              <th class="sortable" data-sort-key="status">Status${sortIndicator('status')}</th>
+              <th class="sortable" data-sort-key="profit">P/L${sortIndicator('profit')}</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+        </div>
+      `;
+    }
+
+    function getChartSeries() {
+      const starting = getTotalStartingBalance();
+      const sorted = [...state.bets].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+      let running = starting;
+      const points = [{ label: 'Start', value: starting }];
+
+      sorted.forEach((bet) => {
+        running += toNumber(bet.profit);
+        points.push({
+          label: bet.date ? new Date(bet.date).toLocaleDateString('en-GB') : `Bet ${points.length}`,
+          value: running
+        });
+      });
+
+      return points;
+    }
+
+    function renderChart() {
+      const canvas = els.profitChart;
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const points = getChartSeries();
+      ctx.fillStyle = '#f9fafb';
+      ctx.font = '12px Arial';
+
+      if (points.length < 2) {
+        ctx.fillText('Add bets to see your balance chart.', 16, 28);
+        return;
+      }
+
+      const padding = { top: 20, right: 16, bottom: 30, left: 60 };
+      const values = points.map((p) => p.value);
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const range = max - min || 1;
+      const plotWidth = width - padding.left - padding.right;
+      const plotHeight = height - padding.top - padding.bottom;
+
+      ctx.strokeStyle = 'rgba(156, 163, 175, 0.35)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding.left, padding.top);
+      ctx.lineTo(padding.left, height - padding.bottom);
+      ctx.lineTo(width - padding.right, height - padding.bottom);
+      ctx.stroke();
+
+      ctx.fillStyle = '#9ca3af';
+      ctx.fillText(formatMoney(max), 6, padding.top + 4);
+      ctx.fillText(formatMoney(min), 6, height - padding.bottom);
+
+      ctx.beginPath();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#f9fafb';
+      points.forEach((point, index) => {
+        const x = padding.left + (index / (points.length - 1)) * plotWidth;
+        const y = padding.top + (1 - ((point.value - min) / range)) * plotHeight;
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      ctx.fillStyle = '#22c55e';
+      points.forEach((point, index) => {
+        const x = padding.left + (index / (points.length - 1)) * plotWidth;
+        const y = padding.top + (1 - ((point.value - min) / range)) * plotHeight;
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.fillStyle = '#9ca3af';
+      ctx.fillText(points[0].label, padding.left, height - 8);
+      ctx.fillText(points[points.length - 1].label, width - padding.right - 80, height - 8);
+    }
+
+    function addBet() {
+      const name = els.betName.value.trim();
+      const site = els.betSite.value;
+      const type = els.betType.value;
+      const points = getSelectedBetPoints();
+      const oddsRaw = els.betOdds.value.trim();
+      const odds = parseOdds(oddsRaw, els.oddsFormat.value);
+      const status = els.betStatus.value;
+      const date = els.betDate.value;
+
+      updateRequiredIndicators();
+
+      if (!name) return alert('Please enter a selection.');
+      if (!site) return alert('Please select a bookmaker.');
+      if (!type) return alert('Please select a bet type.');
+      if (!Number.isFinite(points) || points <= 0) return alert('Please select points or enter valid custom points.');
+      if (!oddsRaw) return alert('Please enter odds.');
+      if (!Number.isFinite(odds) || odds <= 1) return alert('Please enter valid odds.');
+      if (!date) return alert('Please enter the event date and time.');
+
+      const siteBalance = readSiteBalance(site);
+      if (!siteBalance || siteBalance.current <= 0) {
+        return alert('Please set a balance for this bookmaker first.');
+      }
+
+      const stake = getSelectedStake(site, points);
+      const profit = calcProfit(stake, odds, status);
+
+      state.bets.push({
+        name,
+        site,
+        type,
+        points: roundPoints(points),
+        stake,
+        oddsRaw,
+        odds,
+        status,
+        date,
+        profit,
+        isManualOverride: false,
+        stakeEnteredManually: getEnteredStakeAmount() !== null
+      });
+
+      siteBalance.current += profit;
+      saveState();
+      clearBetForm();
+      renderAll();
+    }
+
+    function clearBetForm() {
+      els.betType.value = '';
+      els.betSite.value = '';
+      els.betName.value = '';
+      els.betDate.value = '';
+      els.betStatus.value = 'pending';
+      els.betOdds.value = '';
+      els.betPoints.value = '';
+      els.betPointsCustom.value = '';
+      els.betStakeOverride.value = '';
+      updateBetPreview();
+      updateRequiredIndicators();
+      els.betType.focus();
+    }
+
+    function settleBet(index, newStatus) {
+      const bet = state.bets[index];
+      if (!bet) return;
+
+      const siteBalance = ensureSiteBalance(bet.site);
+      if (!siteBalance) return;
+
+      siteBalance.current -= toNumber(bet.profit);
+      bet.status = newStatus;
+      bet.profit = calcProfit(bet.stake, bet.odds, newStatus);
+      bet.isManualOverride = false;
+      siteBalance.current += bet.profit;
+
+      saveState();
+      refreshActiveSiteSelects();
+      renderAll();
+    }
+
+    function overrideProfit(index) {
+      const bet = state.bets[index];
+      if (!bet) return;
+
+      const siteBalance = ensureSiteBalance(bet.site);
+      if (!siteBalance) return;
+
+      const input = prompt('Enter the actual profit/loss for this bet. Use a negative number for a loss.', String(bet.profit));
+      if (input === null) return;
+
+      const value = Number(input);
+      if (!Number.isFinite(value)) return alert('Please enter a valid number.');
+
+      siteBalance.current -= toNumber(bet.profit);
+      bet.profit = value;
+      bet.isManualOverride = true;
+      bet.status = value === 0 ? 'moneyback' : (value < 0 ? 'loss' : 'win');
+      siteBalance.current += value;
+
+      saveState();
+      refreshActiveSiteSelects();
+      renderAll();
+    }
+
+    function deleteBet(index) {
+      const bet = state.bets[index];
+      if (!bet) return;
+
+      const siteBalance = ensureSiteBalance(bet.site);
+      if (siteBalance) siteBalance.current -= toNumber(bet.profit);
+
+      state.bets.splice(index, 1);
+      saveState();
+      refreshActiveSiteSelects();
+      renderAll();
+    }
+
+    function exportData() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'betting-tracker-data.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importData(file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const parsed = JSON.parse(String(event.target.result || '{}'));
+          state.siteBalances = parsed.siteBalances && typeof parsed.siteBalances === 'object' ? parsed.siteBalances : {};
+          state.bets = Array.isArray(parsed.bets) ? parsed.bets : [];
+          saveState();
+          renderAll();
+        } catch (err) {
+          console.error(err);
+          alert('Invalid JSON file.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function openClearModal() {
+      els.confirmClearInput.value = '';
+      els.clearModal.classList.add('show');
+      els.confirmClearInput.focus();
+    }
+
+    function closeClearModal() {
+      els.clearModal.classList.remove('show');
+      els.confirmClearInput.value = '';
+    }
+
+    function clearAllConfirmed() {
+      if (els.confirmClearInput.value !== 'CONFIRM') {
+        alert('Type CONFIRM exactly to clear everything.');
+        return;
+      }
+      state.siteBalances = {};
+      state.bets = [];
+      state.activeTab = 'dashboard';
+      saveState();
+      closeClearModal();
+      renderAll();
+    }
+
+    function handleSiteBalanceListClick(event) {
+      const loadBtn = event.target.closest('[data-load-site-balance]');
+      if (loadBtn) {
+        const site = loadBtn.getAttribute('data-load-site-balance');
+        const balance = readSiteBalance(site);
+        if (!balance) return;
+        els.balanceSiteSelect.value = site;
+        els.balanceInput.value = String(balance.current);
+        updateRequiredIndicators();
+        return;
+      }
+
+      const resetBtn = event.target.closest('[data-reset-site-balance]');
+      if (resetBtn) {
+        const site = resetBtn.getAttribute('data-reset-site-balance');
+        if (state.bets.some((bet) => bet.site === site)) {
+          return alert('You cannot reset a site balance while bets for that site still exist. Delete those bets first.');
+        }
+        delete state.siteBalances[site];
+        if (els.balanceSiteSelect.value === site) els.balanceSiteSelect.value = '';
+        if (els.quickSite.value === site) els.quickSite.value = '';
+        if (els.betSite.value === site) els.betSite.value = '';
+        saveState();
+        refreshActiveSiteSelects();
+        renderAll();
+      }
+    }
+
+    function openStatusModal(index) {
+      const bet = state.bets[index];
+      if (!bet) return;
+
+      state.pendingStatusIndex = index;
+      els.statusModalSubtitle.textContent = `${bet.name || 'This bet'} — current status: ${bet.status === 'moneyback' ? 'MB' : bet.status}`;
+      els.statusModal.classList.add('open');
+    }
+
+    function closeStatusModal() {
+      state.pendingStatusIndex = null;
+      els.statusModal.classList.remove('open');
+    }
+
+    function applyStatusFromModal(status) {
+      if (state.pendingStatusIndex === null || state.pendingStatusIndex === undefined) return;
+      const index = state.pendingStatusIndex;
+      closeStatusModal();
+      settleBet(index, status);
+    }
+
+    function handleTableClick(event) {
+      const sortHeader = event.target.closest('[data-sort-key]');
+      if (sortHeader) {
+        setBetSort(sortHeader.getAttribute('data-sort-key'));
+        return;
+      }
+
+      const editButton = event.target.closest('[data-edit-index]');
+      if (editButton) {
+        state.editingBetIndex = Number(editButton.getAttribute('data-edit-index'));
+        closeStatusModal();
+        renderAll();
+        return;
+      }
+
+      const saveEditButton = event.target.closest('[data-save-edit-index]');
+      if (saveEditButton) {
+        saveBetEdit(Number(saveEditButton.getAttribute('data-save-edit-index')));
+        return;
+      }
+
+      const cancelEditButton = event.target.closest('[data-cancel-edit]');
+      if (cancelEditButton) {
+        cancelBetEdit();
+        return;
+      }
+
+      const statusButton = event.target.closest('[data-open-status-modal]');
+      if (statusButton) {
+        state.editingBetIndex = null;
+        renderAll();
+        openStatusModal(Number(statusButton.getAttribute('data-open-status-modal')));
+        return;
+      }
+
+      const overrideButton = event.target.closest('[data-override-index]');
+      if (overrideButton) {
+        closeStatusModal();
+        overrideProfit(Number(overrideButton.getAttribute('data-override-index')));
+        return;
+      }
+
+      const deleteButton = event.target.closest('[data-delete-index]');
+      if (deleteButton) {
+        closeStatusModal();
+        deleteBet(Number(deleteButton.getAttribute('data-delete-index')));
+      }
+    }
+
+    function switchTab(tabName) {
+      state.activeTab = tabName;
+      els.tabButtons.forEach((button) => {
+        button.classList.toggle('active', button.dataset.tab === tabName);
+      });
+      els.tabPages.forEach((page) => {
+        page.classList.toggle('active', page.id === `tab-${tabName}`);
+      });
+      saveState();
+      if (tabName === 'analytics') {
+        requestAnimationFrame(renderChart);
+      }
+    }
+
+    function renderAll() {
+      renderStats();
+      renderSiteBalances();
+      renderActiveTable();
+      renderTable();
+      renderChart();
+      updateQuickStake();
+      updateBetPreview();
+      updateRequiredIndicators();
+      switchTab(state.activeTab || 'dashboard');
+    }
+
+    function initSites() {
+      fillSiteSelect(els.balanceSiteSelect);
+      refreshActiveSiteSelects();
+    }
+
+    function initPointButtons() {
+      els.pointsButtons.innerHTML = '';
+      pointValues.forEach((value) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = `${value} pt`;
+        button.addEventListener('click', () => {
+          els.quickPoints.value = String(value);
+          els.betPoints.value = String(value);
+          els.betPointsCustom.value = '';
+          updateQuickStake();
+          updateBetPreview();
+          updateRequiredIndicators();
+        });
+        els.pointsButtons.appendChild(button);
+      });
+    }
+
+    function runSelfTests() {
+      const tests = [
+        { name: 'escapeHtml encodes quotes', pass: escapeHtml('<test>"\'') === '&lt;test&gt;&quot;&#39;' },
+        { name: 'fractional odds convert correctly', pass: parseOdds('5/2', 'fractional') === 3.5 },
+        { name: 'round points to one decimal', pass: roundPoints(4.444) === 4.4 && roundPoints(4.45) === 4.5 },
+        { name: 'moneyback profit is zero', pass: calcProfit(10, 3, 'moneyback') === 0 },
+        { name: 'moneyback status displays as MB', pass: 'MB' === 'MB' },
+        { name: 'potential return excludes stake', pass: calcPotentialReturn({ stake: 10, odds: 3 }) === 20 },
+        { name: 'sort indicator returns string', pass: typeof sortIndicator('date') === 'string' },
+        { name: 'status modal starts closed', pass: state.pendingStatusIndex === null },
+        { name: 'edit state starts inactive', pass: state.editingBetIndex === null },
+        { name: 'site balance read does not create missing site', pass: (() => {
+          delete state.siteBalances.Missing;
+          const before = Object.prototype.hasOwnProperty.call(state.siteBalances, 'Missing');
+          const value = getSiteBalance('Missing');
+          const after = Object.prototype.hasOwnProperty.call(state.siteBalances, 'Missing');
+          return before === false && value === 0 && after === false;
+        })() },
+        { name: 'stake uses site balance', pass: (() => {
+          state.siteBalances.Test = { starting: 100, current: 100 };
+          const ok = calcStakeForSite('Test', 5) === 5;
+          delete state.siteBalances.Test;
+          return ok;
+        })() },
+        { name: 'custom points override dropdown', pass: (() => {
+          els.betPoints.value = '2';
+          els.betPointsCustom.value = '1.5';
+          const ok = getSelectedBetPoints() === 1.5;
+          els.betPoints.value = '';
+          els.betPointsCustom.value = '';
+          return ok;
+        })() },
+        { name: 'cash stake converts to points', pass: (() => {
+          state.siteBalances.Bet365 = { starting: 100, current: 100 };
+          els.betSite.value = 'Bet365';
+          els.betStakeOverride.value = '10';
+          const ok = getSelectedBetPoints() === 10 && getSelectedStake('Bet365', 10) === 10;
+          els.betSite.value = '';
+          els.betStakeOverride.value = '';
+          delete state.siteBalances.Bet365;
+          return ok;
+        })() },
+        { name: 'clear confirm requires exact word', pass: (() => 'CONFIRM' === 'CONFIRM')() }
+      ];
+
+      const failed = tests.filter((test) => !test.pass);
+      if (failed.length) console.error('Self-tests failed:', failed);
+    }
+
+    function initEvents() {
+      els.tabButtons.forEach((button) => {
+        button.addEventListener('click', () => switchTab(button.dataset.tab));
+      });
+
+      els.setSiteBalanceBtn.addEventListener('click', setSiteBalance);
+      els.quickSite.addEventListener('change', updateQuickStake);
+      els.quickPoints.addEventListener('input', updateQuickStake);
+      els.betSite.addEventListener('change', updateBetPreview);
+      els.betType.addEventListener('change', updateBetPreview);
+
+      els.betPoints.addEventListener('change', () => {
+        if (els.betPoints.value) {
+          els.betPointsCustom.value = '';
+          els.betStakeOverride.value = '';
+        }
+        updateBetPreview();
+        updateRequiredIndicators();
+      });
+
+      els.betPointsCustom.addEventListener('input', () => {
+        if (String(els.betPointsCustom.value || '').trim() !== '') {
+          els.betPoints.value = '';
+          els.betStakeOverride.value = '';
+        }
+        updateBetPreview();
+        updateRequiredIndicators();
+      });
+
+      els.betStakeOverride.addEventListener('input', () => {
+        if (String(els.betStakeOverride.value || '').trim() !== '') {
+          els.betPoints.value = '';
+          els.betPointsCustom.value = '';
+        }
+        updateBetPreview();
+        updateRequiredIndicators();
+      });
+
+      els.addBetBtn.addEventListener('click', addBet);
+      els.exportBtn.addEventListener('click', exportData);
+      els.importBtn.addEventListener('click', () => els.importFile.click());
+      els.importFile.addEventListener('change', (event) => {
+        const file = event.target.files && event.target.files[0];
+        if (file) importData(file);
+        event.target.value = '';
+      });
+
+      els.openClearModalBtn.addEventListener('click', openClearModal);
+      els.cancelClearBtn.addEventListener('click', closeClearModal);
+      els.confirmClearBtn.addEventListener('click', clearAllConfirmed);
+      els.clearModal.addEventListener('click', (event) => {
+        if (event.target === els.clearModal) closeClearModal();
+      });
+
+      els.tableWrap.addEventListener('click', handleTableClick);
+
+      els.betSearch.addEventListener('input', () => {
+        state.betSearch = els.betSearch.value;
+        saveState();
+        renderAll();
+      });
+
+      els.clearBetFiltersBtn.addEventListener('click', clearBetFilters);
+
+      els.filterSite.addEventListener('change', () => {
+        state.betFilters.site = els.filterSite.value;
+        saveState();
+        renderAll();
+      });
+
+      els.filterStatus.addEventListener('change', () => {
+        state.betFilters.status = els.filterStatus.value;
+        saveState();
+        renderAll();
+      });
+
+      els.filterType.addEventListener('change', () => {
+        state.betFilters.type = els.filterType.value;
+        saveState();
+        renderAll();
+      });
+
+      els.filterMinDate.addEventListener('change', () => {
+        state.betFilters.minDate = els.filterMinDate.value;
+        saveState();
+        renderAll();
+      });
+
+      els.filterMaxDate.addEventListener('change', () => {
+        state.betFilters.maxDate = els.filterMaxDate.value;
+        saveState();
+        renderAll();
+      });
+      els.siteBalanceList.addEventListener('click', handleSiteBalanceListClick);
+
+      els.statusModal.addEventListener('click', (event) => {
+        if (event.target === els.statusModal) closeStatusModal();
+
+        const statusButton = event.target.closest('[data-modal-status]');
+        if (statusButton) {
+          applyStatusFromModal(statusButton.getAttribute('data-modal-status'));
+        }
+      });
+
+      els.cancelStatusModalBtn.addEventListener('click', closeStatusModal);
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeStatusModal();
+      });
+
+      [
+        els.balanceSiteSelect, els.balanceInput, els.quickSite,
+        els.betType, els.betSite, els.betName, els.betDate, els.betOdds,
+        els.betPoints, els.betPointsCustom, els.betStakeOverride
+      ].forEach((element) => {
+        element.addEventListener('input', updateRequiredIndicators);
+        element.addEventListener('change', updateRequiredIndicators);
+      });
+    }
+
+    function init() {
+      runSelfTests();
+      loadState();
+      initSites();
+      initPointSelect();
+      initPointButtons();
+      initEvents();
+      renderAll();
+    }
+
+    init();
+  </script>
+</body>
+</html>
