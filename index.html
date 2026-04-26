@@ -1132,6 +1132,7 @@
       </div>
       <div class="app-user-bar">
         <span id="signedInEmail"></span>
+        <span id="syncStatus" aria-live="polite"></span>
         <button type="button" class="secondary" id="signOutBtn">Sign Out</button>
       </div>
     </div>
@@ -1553,7 +1554,8 @@
       signUpBtn: document.getElementById('signUpBtn'),
       signOutBtn: document.getElementById('signOutBtn'),
       authMessage: document.getElementById('authMessage'),
-      signedInEmail: document.getElementById('signedInEmail')
+      signedInEmail: document.getElementById('signedInEmail'),
+      syncStatus: document.getElementById('syncStatus')
     };
 
     function formatMoney(value) {
@@ -1823,6 +1825,221 @@
     }
 
 
+
+    let isHydratingFromCloud = false;
+    let saveTimer = null;
+
+    function setSyncStatus(message) {
+      if (els.syncStatus) els.syncStatus.textContent = message || '';
+    }
+
+    function siteBalancesToRows() {
+      if (!state.currentUser) return [];
+
+      return Object.entries(state.siteBalances).map(([bookmaker, balance]) => ({
+        user_id: state.currentUser.id,
+        bookmaker,
+        starting_balance: toNumber(balance.starting),
+        current_balance: toNumber(balance.current)
+      }));
+    }
+
+    function betsToRows() {
+      if (!state.currentUser) return [];
+
+      return state.bets.map((bet) => ({
+        user_id: state.currentUser.id,
+        bookmaker: bet.site,
+        selection: bet.name,
+        bet_type: bet.type,
+        points: toNumber(bet.points),
+        stake: toNumber(bet.stake),
+        odds_raw: bet.oddsRaw,
+        odds: toNumber(bet.odds),
+        status: bet.status,
+        event_datetime: bet.date ? new Date(bet.date).toISOString() : null,
+        profit: toNumber(bet.profit),
+        balance_impact: typeof bet.balanceImpact === 'number'
+          ? toNumber(bet.balanceImpact)
+          : calcBalanceImpact(bet, bet.status),
+        is_manual_override: Boolean(bet.isManualOverride),
+        stake_entered_manually: Boolean(bet.stakeEnteredManually)
+      }));
+    }
+
+    function rowsToSiteBalances(rows) {
+      const balances = {};
+
+      (rows || []).forEach((row) => {
+        balances[row.bookmaker] = {
+          starting: toNumber(row.starting_balance),
+          current: toNumber(row.current_balance)
+        };
+      });
+
+      return balances;
+    }
+
+    function rowsToBets(rows) {
+      return (rows || []).map((row) => ({
+        id: row.id,
+        name: row.selection,
+        site: row.bookmaker,
+        type: row.bet_type,
+        points: roundPoints(row.points),
+        stake: toNumber(row.stake),
+        oddsRaw: row.odds_raw,
+        odds: toNumber(row.odds),
+        status: row.status,
+        date: row.event_datetime ? row.event_datetime.slice(0, 16) : '',
+        profit: toNumber(row.profit),
+        balanceImpact: toNumber(row.balance_impact),
+        isManualOverride: Boolean(row.is_manual_override),
+        stakeEnteredManually: Boolean(row.stake_entered_manually)
+      }));
+    }
+
+    async function loadCloudState() {
+      if (!state.currentUser) return;
+
+      setSyncStatus('Loading cloud data...');
+      isHydratingFromCloud = true;
+
+      const [{ data: balances, error: balancesError }, { data: bets, error: betsError }, { data: settings, error: settingsError }] = await Promise.all([
+        supabaseClient
+          .from('site_balances')
+          .select('*')
+          .order('bookmaker', { ascending: true }),
+        supabaseClient
+          .from('bets')
+          .select('*')
+          .order('event_datetime', { ascending: true }),
+        supabaseClient
+          .from('user_settings')
+          .select('*')
+          .maybeSingle()
+      ]);
+
+      if (balancesError || betsError || settingsError) {
+        console.error({ balancesError, betsError, settingsError });
+        setSyncStatus('Cloud load failed');
+        isHydratingFromCloud = false;
+        alert('Cloud data failed to load. Please check your Supabase table policies.');
+        return;
+      }
+
+      state.siteBalances = rowsToSiteBalances(balances);
+      state.bets = rowsToBets(bets);
+      state.activeTab = 'dashboard';
+      state.editingBetIndex = null;
+      state.pendingStatusIndex = null;
+
+      if (settings && settings.theme && typeof setTheme === 'function') {
+        setTheme(settings.theme === 'light', false);
+      }
+
+      localStorage.setItem(storageKey, JSON.stringify(state));
+      isHydratingFromCloud = false;
+      setSyncStatus('Cloud synced');
+    }
+
+
+    async function offerLocalMigrationIfNeeded() {
+      if (!state.currentUser) return;
+
+      const cloudHasData = Object.keys(state.siteBalances).length > 0 || state.bets.length > 0;
+      if (cloudHasData) return;
+
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) return;
+
+      try {
+        const local = JSON.parse(raw);
+        const hasLocalData = local
+          && ((local.siteBalances && Object.keys(local.siteBalances).length > 0)
+          || (Array.isArray(local.bets) && local.bets.length > 0));
+
+        if (!hasLocalData) return;
+
+        const shouldImport = confirm('Local tracker data was found on this device. Import it into your cloud account?');
+        if (!shouldImport) return;
+
+        state.siteBalances = local.siteBalances && typeof local.siteBalances === 'object' ? local.siteBalances : {};
+        state.bets = Array.isArray(local.bets) ? local.bets : [];
+        await saveCloudStateNow();
+        setSyncStatus('Local data imported');
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+
+    async function saveCloudStateNow() {
+      if (!state.currentUser || isHydratingFromCloud) return;
+
+      setSyncStatus('Saving...');
+
+      const userId = state.currentUser.id;
+      const balanceRows = siteBalancesToRows();
+      const betRows = betsToRows();
+      const themeIsLight = document.body.classList.contains('light-mode');
+
+      const { error: deleteBalancesError } = await supabaseClient
+        .from('site_balances')
+        .delete()
+        .eq('user_id', userId);
+
+      if (deleteBalancesError) throw deleteBalancesError;
+
+      if (balanceRows.length) {
+        const { error } = await supabaseClient
+          .from('site_balances')
+          .insert(balanceRows);
+        if (error) throw error;
+      }
+
+      const { error: deleteBetsError } = await supabaseClient
+        .from('bets')
+        .delete()
+        .eq('user_id', userId);
+
+      if (deleteBetsError) throw deleteBetsError;
+
+      if (betRows.length) {
+        const { error } = await supabaseClient
+          .from('bets')
+          .insert(betRows);
+        if (error) throw error;
+      }
+
+      const { error: settingsError } = await supabaseClient
+        .from('user_settings')
+        .upsert({
+          user_id: userId,
+          theme: themeIsLight ? 'light' : 'dark'
+        }, { onConflict: 'user_id' });
+
+      if (settingsError) throw settingsError;
+
+      setSyncStatus('Cloud synced');
+    }
+
+    function queueCloudSave() {
+      if (!state.currentUser || isHydratingFromCloud) return;
+
+      window.clearTimeout(saveTimer);
+      saveTimer = window.setTimeout(async () => {
+        try {
+          await saveCloudStateNow();
+        } catch (error) {
+          console.error(error);
+          setSyncStatus('Cloud save failed');
+          alert(`Cloud save failed: ${error.message || error}`);
+        }
+      }, 350);
+    }
+
+
     function setAuthMessage(message, type = '') {
       els.authMessage.textContent = message || '';
       els.authMessage.classList.remove('error', 'success');
@@ -1848,9 +2065,8 @@
       if (els.signedInEmail) els.signedInEmail.textContent = user && user.email ? user.email : '';
       setAuthLoading(false);
 
-      loadState();
-      state.activeTab = 'dashboard';
-      if (typeof migratePendingStakeReservations === 'function') migratePendingStakeReservations();
+      await loadCloudState();
+      await offerLocalMigrationIfNeeded();
       initSites();
       if (typeof restoreDashboardCardStates === 'function') restoreDashboardCardStates();
       renderAll();
@@ -1950,6 +2166,7 @@
 
     function saveState() {
       localStorage.setItem(storageKey, JSON.stringify(state));
+      queueCloudSave();
     }
 
     function loadState() {
