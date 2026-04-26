@@ -17,14 +17,24 @@
       --border: #374151;
       --blue: #2563eb;
       --overlay: rgba(2, 6, 23, 0.8);
+      --page-start: #020617;
+      --page-end: #111827;
     }
 
     * { box-sizing: border-box; }
 
+    html {
+      min-height: 100%;
+      background: linear-gradient(180deg, var(--page-start), var(--page-end));
+      background-attachment: fixed;
+    }
+
     body {
       margin: 0;
+      min-height: 100vh;
       font-family: Arial, Helvetica, sans-serif;
-      background: linear-gradient(180deg, #020617, #111827);
+      background: linear-gradient(180deg, var(--page-start), var(--page-end));
+      background-attachment: fixed;
       color: var(--text);
       padding: 24px;
     }
@@ -76,6 +86,39 @@
       display: grid;
       grid-template-columns: repeat(12, 1fr);
       gap: 16px;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .stats-row .card {
+      min-width: 0;
+    }
+
+    .stats-row .stat-label {
+      white-space: nowrap;
+      font-size: 12px;
+    }
+
+    .stats-row .stat-value {
+      font-size: clamp(18px, 1.55vw, 26px);
+      white-space: nowrap;
+    }
+
+    .stats-row .card {
+      padding: 14px;
+    }
+
+    @media (max-width: 1300px) {
+      .stats-row {
+        grid-template-columns: repeat(8, minmax(150px, 1fr));
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
     }
 
     .card {
@@ -267,6 +310,32 @@
 
     @media (max-width: 900px) {
       .site-balance-row { grid-template-columns: 1fr; }
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .summary-item {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(31, 41, 55, 0.45);
+    }
+
+    .summary-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .summary-value {
+      font-weight: bold;
+      font-size: 20px;
+      white-space: nowrap;
     }
 
     .chart-wrap {
@@ -554,25 +623,432 @@
       width: auto;
       padding: 10px 14px;
     }
-  </style>
+  
+    /* Theme toggle: default remains the original dark v27 theme */
+    body.light-mode {
+      --bg: #334155;
+      --panel: #dbeafe;
+      --panel2: #bfdbfe;
+      --text: #0f172a;
+      --muted: #334155;
+      --accent: #15803d;
+      --danger: #b91c1c;
+      --warn: #92400e;
+      --border: #7aa2d8;
+      --blue: #1d4ed8;
+      --overlay: rgba(15, 23, 42, 0.35);
+      --page-start: #dbeafe;
+      --page-end: #93c5fd;
+    }
+
+    body.light-mode .card,
+    body.light-mode .modal,
+    body.light-mode .status-modal {
+      background: #dbeafe;
+    }
+
+    body.light-mode input,
+    body.light-mode select,
+    body.light-mode textarea {
+      background: #bfdbfe;
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    body.light-mode .tab-btn,
+    body.light-mode button.secondary,
+    body.light-mode .points-grid button,
+    body.light-mode .site-balance-row,
+    body.light-mode .summary-item,
+    body.light-mode .chart-wrap,
+    body.light-mode .active-bet-item {
+      background: #bfdbfe;
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    body.light-mode .tab-btn.active,
+    body.light-mode button.primary,
+    body.light-mode button.edit-btn {
+      background: var(--blue);
+      color: #f8fafc;
+    }
+
+    body.light-mode .warning-box {
+      background: #fde68a;
+      border-color: #f59e0b;
+      color: #78350f;
+    }
+
+    body.light-mode .filter-pill {
+      background: rgba(29, 78, 216, 0.18);
+      color: #1e3a8a;
+    }
+
+    body.light-mode .tag {
+      background: #c7d2fe;
+      color: #1e1b4b;
+    }
+
+    .theme-toggle {
+      all: unset;
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 1000;
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      min-height: 38px;
+      max-width: 38px;
+      max-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(17, 24, 39, 0.95);
+      color: var(--text);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+      cursor: pointer;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+      line-height: 0;
+    }
+
+    body.light-mode .theme-toggle {
+      background: #dbeafe;
+      color: #0f172a;
+      box-shadow: 0 8px 24px rgba(30, 64, 175, 0.22);
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    .theme-toggle svg {
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      min-height: 18px;
+      max-width: 18px;
+      max-height: 18px;
+      display: block;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      pointer-events: none;
+    }
+
+    .theme-toggle .moon-icon { display: none; }
+    .theme-toggle .sun-icon { display: block; }
+    body.light-mode .theme-toggle .sun-icon { display: none; }
+    body.light-mode .theme-toggle .moon-icon { display: block; }
+
+  
+    /* Accessibility improvements */
+    :focus-visible {
+      outline: 3px solid #facc15;
+      outline-offset: 3px;
+    }
+
+    .tab-btn:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    .sortable:focus-visible {
+      outline: 3px solid #facc15;
+      outline-offset: 3px;
+      box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.18);
+    }
+
+    button:disabled,
+    input:disabled,
+    select:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .profit {
+      color: #4ade80;
+    }
+
+    .loss {
+      color: #f87171;
+    }
+
+    body.light-mode .profit {
+      color: #166534;
+    }
+
+    body.light-mode .loss {
+      color: #991b1b;
+    }
+
+    .tag.win {
+      background: rgba(34, 197, 94, 0.28);
+      color: #bbf7d0;
+    }
+
+    .tag.loss {
+      background: rgba(239, 68, 68, 0.28);
+      color: #fecaca;
+    }
+
+    .tag.pending {
+      background: rgba(245, 158, 11, 0.28);
+      color: #fde68a;
+    }
+
+    .tag.moneyback {
+      background: rgba(20, 184, 166, 0.28);
+      color: #ccfbf1;
+    }
+
+    body.light-mode .tag.win {
+      background: #bbf7d0;
+      color: #14532d;
+    }
+
+    body.light-mode .tag.loss {
+      background: #fecaca;
+      color: #7f1d1d;
+    }
+
+    body.light-mode .tag.pending {
+      background: #fde68a;
+      color: #78350f;
+    }
+
+    body.light-mode .tag.moneyback {
+      background: #ccfbf1;
+      color: #134e4a;
+    }
+
+    body.light-mode .tag.fancy {
+      background: #ddd6fe;
+      color: #4c1d95;
+    }
+
+    body.light-mode .tag.override {
+      background: #c7d2fe;
+      color: #312e81;
+    }
+
+    body.light-mode .tag.overdue {
+      background: #fecaca;
+      color: #7f1d1d;
+    }
+
+    th.sortable {
+      position: relative;
+    }
+
+    th.sortable:focus-visible {
+      border-radius: 6px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.001ms !important;
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+
+    @media (forced-colors: active) {
+      .card,
+      input,
+      select,
+      button,
+      .tag {
+        border: 1px solid CanvasText;
+      }
+    }
+
+  
+    .analytics-table table {
+      min-width: 0;
+      width: 100%;
+      table-layout: fixed;
+    }
+
+    .analytics-table th,
+    .analytics-table td {
+      padding: 7px 6px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .analytics-table th:first-child,
+    .analytics-table td:first-child {
+      width: 26%;
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .analytics-table th:nth-child(2),
+    .analytics-table td:nth-child(2),
+    .analytics-table th:nth-child(3),
+    .analytics-table td:nth-child(3),
+    .analytics-table th:nth-child(4),
+    .analytics-table td:nth-child(4) {
+      width: 8%;
+      text-align: center;
+    }
+
+    .analytics-table th:nth-child(5),
+    .analytics-table td:nth-child(5),
+    .analytics-table th:nth-child(9),
+    .analytics-table td:nth-child(9) {
+      width: 9%;
+      text-align: right;
+    }
+
+    .analytics-table th:nth-child(6),
+    .analytics-table td:nth-child(6),
+    .analytics-table th:nth-child(7),
+    .analytics-table td:nth-child(7),
+    .analytics-table th:nth-child(8),
+    .analytics-table td:nth-child(8) {
+      width: 10.5%;
+      text-align: right;
+    }
+
+  
+    .collapsible-card .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .collapsible-card .card-header h2 {
+      margin: 0;
+    }
+
+    .collapse-toggle {
+      width: auto;
+      min-width: 92px;
+      padding: 7px 10px;
+      font-size: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel2);
+      color: var(--text);
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .collapse-toggle:hover {
+      border-color: var(--blue);
+    }
+
+    .collapsible-card.is-collapsed .collapsible-body {
+      display: none;
+    }
+
+    .collapsible-card.is-collapsed {
+      align-self: start;
+    }
+
+  
+    /* Fix: Load / primary buttons in light mode */
+    body.light-mode button.primary,
+    body.light-mode .load-btn {
+      background: var(--blue);
+      color: #ffffff;
+      border-color: var(--blue);
+    }
+
+    body.light-mode button.primary:hover,
+    body.light-mode .load-btn:hover {
+      background: #1e40af;
+      border-color: #1e40af;
+    }
+
+
+    /* Fix: Site Balance Load buttons in light mode */
+    body.light-mode .site-balance-row button.secondary,
+    body.light-mode button[data-load-site-balance] {
+      background: var(--blue) !important;
+      color: #ffffff !important;
+      border-color: var(--blue) !important;
+    }
+
+    body.light-mode .site-balance-row button.secondary:hover,
+    body.light-mode button[data-load-site-balance]:hover {
+      background: #1e40af !important;
+      border-color: #1e40af !important;
+      color: #ffffff !important;
+    }
+
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>Betting Tracker</h1>
-    <div class="subtitle">Each bookmaker has its own bankroll. Points represent a percentage of that site's balance, and settled bets update only that bookmaker’s running balance.</div>
 
-    <div class="grid" style="margin-bottom: 18px;">
-      <div class="card span4">
+  <button type="button" class="theme-toggle" id="themeToggleBtn" aria-label="Switch to light mode" title="Switch to light mode">
+    <svg class="sun-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="4"></circle>
+      <path d="M12 2v2"></path>
+      <path d="M12 20v2"></path>
+      <path d="M4.93 4.93l1.41 1.41"></path>
+      <path d="M17.66 17.66l1.41 1.41"></path>
+      <path d="M2 12h2"></path>
+      <path d="M20 12h2"></path>
+      <path d="M4.93 19.07l1.41-1.41"></path>
+      <path d="M17.66 6.34l1.41-1.41"></path>
+    </svg>
+    <svg class="moon-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a7 7 0 1 0 9.8 9.8z"></path>
+    </svg>
+  </button>
+
+  <main class="container">
+    <h1>Betting Tracker</h1>
+    <div class="subtitle">Each bookmaker has its own bankroll. Points use that bookmaker’s available balance, with pending stakes reserved until settled.</div>
+
+    <div class="stats-row">
+      <div class="card">
         <div class="stat-label">Total Current Balance</div>
         <div class="stat-value" id="totalCurrentBalance">£0.00</div>
       </div>
-      <div class="card span4">
+      <div class="card">
         <div class="stat-label">Total Starting Balance</div>
         <div class="stat-value" id="totalStartingBalance">£0.00</div>
       </div>
-      <div class="card span4">
-        <div class="stat-label">Overall Profit / Loss</div>
+      <div class="card">
+        <div class="stat-label">Actual Profit / Loss</div>
         <div class="stat-value" id="overallPL">£0.00</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">Active Stake Value</div>
+        <div class="stat-value" id="activeStakeValue">£0.00</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">Active Potential Profit</div>
+        <div class="stat-value" id="activePotentialProfit">£0.00</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">ROI</div>
+        <div class="stat-value" id="roiValue">0.0%</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">Active Bets</div>
+        <div class="stat-value" id="activeBetCount">0</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">Exposure</div>
+        <div class="stat-value" id="exposureValue">0.0%</div>
       </div>
     </div>
 
@@ -585,8 +1061,12 @@
 
     <div id="tab-dashboard" class="tab-page active">
       <div class="grid">
-        <div class="card span6">
-          <h2>Set Site Balance</h2>
+        <div class="card span6 collapsible-card" id="siteBalanceCard">
+          <div class="card-header">
+            <h2>Set Site Balance</h2>
+            <button type="button" class="collapse-toggle" data-collapse-target="siteBalanceCard" aria-expanded="true">Minimise</button>
+          </div>
+          <div class="collapsible-body">
           <div class="form-grid-3">
             <div>
               <label for="balanceSiteSelect" class="label-with-required">Bookmaker <span class="required-star" data-required-for="balanceSiteSelect">*</span></label>
@@ -603,10 +1083,15 @@
           </div>
           <div class="helper">The first time you set a bookmaker it becomes both the starting and current balance. After that, it updates the current balance only.</div>
           <div class="site-balance-list" id="siteBalanceList"></div>
+          </div>
         </div>
 
-        <div class="card span6">
-          <h2>Point Calculator</h2>
+        <div class="card span6 collapsible-card" id="pointCalculatorCard">
+          <div class="card-header">
+            <h2>Point Calculator</h2>
+            <button type="button" class="collapse-toggle" data-collapse-target="pointCalculatorCard" aria-expanded="true">Minimise</button>
+          </div>
+          <div class="collapsible-body">
           <div class="form-grid">
             <div>
               <label for="quickSite" class="label-with-required">Bookmaker <span class="required-star" data-required-for="quickSite">*</span></label>
@@ -623,6 +1108,7 @@
           </div>
           <div class="helper">Stake is based on the selected bookmaker balance only.</div>
           <div class="points-grid" id="pointsButtons"></div>
+          </div>
         </div>
 
         <div class="card span8">
@@ -705,7 +1191,7 @@
             </div>
 
             <div class="helper" id="calculatedStakeText">Stake: £0.00</div>
-            <div class="warning-box">Use either the points dropdown, custom points, or a cash stake. If you enter a cash stake, the tracker will calculate the equivalent points from that bookmaker’s current balance. Use Money Back for stake-return bets where profit/loss is £0.</div>
+            <div class="warning-box">Use either the points dropdown, custom points, or a cash stake. Pending bets reserve the stake immediately, so future points use the remaining available balance. Use Money Back for stake-return bets where profit/loss is £0.</div>
           </div>
 
           <button type="button" class="success" id="addBetBtn">Add Bet</button>
@@ -755,7 +1241,7 @@
               </div>
             </div>
 
-            <div class="filter-pill-row" id="filterBreadcrumb"></div>
+            <div class="filter-pill-row" id="filterBreadcrumb" aria-live="polite"></div>
           </div>
           <div id="tableWrap"></div>
         </div>
@@ -764,6 +1250,16 @@
 
     <div id="tab-analytics" class="tab-page">
       <div class="grid">
+        <div class="card span6">
+          <h2>Performance Summary</h2>
+          <div id="performanceSummary"></div>
+        </div>
+
+        <div class="card span6">
+          <h2>Bookmaker Breakdown</h2>
+          <div id="bookmakerBreakdown"></div>
+        </div>
+
         <div class="card span12">
           <h2>Balance Over Time</h2>
           <div class="helper">Your bankroll movement across all bookmakers.</div>
@@ -804,11 +1300,11 @@
         </div>
       </div>
     </div>
-  </div>
+  </main>
 
-  <div class="modal-overlay" id="clearModal">
+  <div class="modal-overlay" id="clearModal" role="dialog" aria-modal="true" aria-labelledby="clearModalTitle">
     <div class="modal">
-      <h2>Clear All Data</h2>
+      <h2 id="clearModalTitle">Clear All Data</h2>
       <div class="helper">Type <strong>CONFIRM</strong> exactly to delete all saved data for this site from your browser.</div>
       <div style="margin-top: 12px;">
         <label for="confirmClearInput">Confirmation</label>
@@ -876,6 +1372,11 @@
       totalCurrentBalance: document.getElementById('totalCurrentBalance'),
       totalStartingBalance: document.getElementById('totalStartingBalance'),
       overallPL: document.getElementById('overallPL'),
+      activeStakeValue: document.getElementById('activeStakeValue'),
+      activePotentialProfit: document.getElementById('activePotentialProfit'),
+      roiValue: document.getElementById('roiValue'),
+      activeBetCount: document.getElementById('activeBetCount'),
+      exposureValue: document.getElementById('exposureValue'),
       balanceSiteSelect: document.getElementById('balanceSiteSelect'),
       balanceInput: document.getElementById('balanceInput'),
       setSiteBalanceBtn: document.getElementById('setSiteBalanceBtn'),
@@ -910,6 +1411,8 @@
       importBtn: document.getElementById('importBtn'),
       importFile: document.getElementById('importFile'),
       profitChart: document.getElementById('profitChart'),
+      performanceSummary: document.getElementById('performanceSummary'),
+      bookmakerBreakdown: document.getElementById('bookmakerBreakdown'),
       statusModal: document.getElementById('statusModal'),
       statusModalSubtitle: document.getElementById('statusModalSubtitle'),
       cancelStatusModalBtn: document.getElementById('cancelStatusModalBtn'),
@@ -980,6 +1483,23 @@
       return toNumber(bet.stake) * (toNumber(bet.odds) - 1);
     }
 
+    function calcBalanceImpact(bet, statusOverride = bet.status) {
+      const stake = toNumber(bet.stake);
+      const odds = toNumber(bet.odds);
+      const status = statusOverride;
+
+      if (bet.isManualOverride && status === bet.status) {
+        return toNumber(bet.profit);
+      }
+
+      if (status === 'pending') return -stake;
+      if (status === 'loss') return -stake;
+      if (status === 'moneyback') return 0;
+      if (status === 'win') return stake * (odds - 1);
+
+      return 0;
+    }
+
     function ensureSiteBalance(site) {
       if (!site) return null;
       if (!state.siteBalances[site]) {
@@ -1004,6 +1524,57 @@
 
     function getTotalCurrentBalance() {
       return Object.values(state.siteBalances).reduce((sum, item) => sum + toNumber(item.current), 0);
+    }
+
+    function getActiveStakeValue() {
+      return state.bets
+        .filter((bet) => bet.status === 'pending')
+        .reduce((sum, bet) => sum + toNumber(bet.stake), 0);
+    }
+
+    function getActivePotentialProfit() {
+      return state.bets
+        .filter((bet) => bet.status === 'pending')
+        .reduce((sum, bet) => sum + calcPotentialReturn(bet), 0);
+    }
+
+    function getActualProfitLoss() {
+      return state.bets
+        .filter((bet) => bet.status !== 'pending')
+        .reduce((sum, bet) => {
+          const impact = typeof bet.balanceImpact === 'number'
+            ? bet.balanceImpact
+            : calcBalanceImpact(bet, bet.status);
+          return sum + impact;
+        }, 0);
+    }
+
+    function getSettledStakeValue() {
+      return state.bets
+        .filter((bet) => bet.status !== 'pending')
+        .reduce((sum, bet) => sum + toNumber(bet.stake), 0);
+    }
+
+    function getRoiPercent() {
+      const settledStake = getSettledStakeValue();
+      if (settledStake <= 0) return 0;
+      return (getActualProfitLoss() / settledStake) * 100;
+    }
+
+    function getActiveBetCount() {
+      return state.bets.filter((bet) => bet.status === 'pending').length;
+    }
+
+    function getExposurePercent() {
+      const activeStake = getActiveStakeValue();
+      const totalBankrollIncludingActiveStakes = getTotalCurrentBalance() + activeStake;
+      if (totalBankrollIncludingActiveStakes <= 0) return 0;
+      return (activeStake / totalBankrollIncludingActiveStakes) * 100;
+    }
+
+    function formatPercent(value) {
+      const n = Number(value);
+      return Number.isFinite(n) ? `${n.toFixed(1)}%` : '0.0%';
     }
 
     function calcStakeForSite(site, points) {
@@ -1096,6 +1667,28 @@
       });
     }
 
+    function migratePendingStakeReservations() {
+      let changed = false;
+
+      state.bets.forEach((bet) => {
+        if (typeof bet.balanceImpact === 'number') return;
+
+        const siteBalance = readSiteBalance(bet.site);
+        const newImpact = calcBalanceImpact(bet, bet.status);
+
+        if (bet.status === 'pending' && siteBalance) {
+          siteBalance.current += newImpact;
+          changed = true;
+        }
+
+        bet.balanceImpact = newImpact;
+      });
+
+      if (changed) {
+        saveState();
+      }
+    }
+
     function saveState() {
       localStorage.setItem(storageKey, JSON.stringify(state));
     }
@@ -1108,7 +1701,7 @@
         const parsed = JSON.parse(raw);
         state.siteBalances = parsed.siteBalances && typeof parsed.siteBalances === 'object' ? parsed.siteBalances : {};
         state.bets = Array.isArray(parsed.bets) ? parsed.bets : [];
-        state.activeTab = typeof parsed.activeTab === 'string' ? parsed.activeTab : 'dashboard';
+        state.activeTab = 'dashboard';
         state.betSearch = typeof parsed.betSearch === 'string' ? parsed.betSearch : '';
         state.betFilters = parsed.betFilters && typeof parsed.betFilters === 'object'
           ? { site: parsed.betFilters.site || '', status: parsed.betFilters.status || '', type: parsed.betFilters.type || '', minDate: parsed.betFilters.minDate || '', maxDate: parsed.betFilters.maxDate || '' }
@@ -1231,12 +1824,31 @@
     function renderStats() {
       const starting = getTotalStartingBalance();
       const current = getTotalCurrentBalance();
-      const pl = current - starting;
+      const actualPL = getActualProfitLoss();
+      const activeStake = getActiveStakeValue();
+      const activePotential = getActivePotentialProfit();
 
       els.totalStartingBalance.textContent = formatMoney(starting);
       els.totalCurrentBalance.textContent = formatMoney(current);
-      els.overallPL.textContent = formatMoney(pl);
-      els.overallPL.className = 'stat-value ' + (pl < 0 ? 'loss' : 'profit');
+      els.overallPL.textContent = formatMoney(actualPL);
+      els.overallPL.className = 'stat-value ' + (actualPL < 0 ? 'loss' : 'profit');
+
+      els.activeStakeValue.textContent = formatMoney(activeStake);
+      els.activeStakeValue.className = 'stat-value loss';
+
+      els.activePotentialProfit.textContent = formatMoney(activePotential);
+      els.activePotentialProfit.className = 'stat-value profit';
+
+      const roi = getRoiPercent();
+      els.roiValue.textContent = formatPercent(roi);
+      els.roiValue.className = 'stat-value ' + (roi < 0 ? 'loss' : 'profit');
+
+      els.activeBetCount.textContent = String(getActiveBetCount());
+      els.activeBetCount.className = 'stat-value';
+
+      const exposure = getExposurePercent();
+      els.exposureValue.textContent = formatPercent(exposure);
+      els.exposureValue.className = 'stat-value ' + (exposure > 0 ? 'loss' : '');
     }
 
     function renderSiteBalances() {
@@ -1289,7 +1901,7 @@
           <div class="active-bet-item ${overdue ? 'overdue' : ''}">
             <div class="active-bet-title">${escapeHtml(bet.name)} ${overdue ? '<span class="tag overdue">overdue</span>' : '<span class="tag pending">pending</span>'}</div>
             <div class="active-bet-meta">
-              ${escapeHtml(bet.site)} · ${formatPoints(bet.points)} pts · Stake ${formatMoney(bet.stake)} · Odds ${escapeHtml(bet.oddsRaw)}<br>
+              ${escapeHtml(bet.site)} · ${formatPoints(bet.points)} pts · Stake reserved ${formatMoney(bet.stake)} · Potential profit ${formatMoney(calcPotentialReturn(bet))} · Odds ${escapeHtml(bet.oddsRaw)}<br>
               Event: ${bet.date ? new Date(bet.date).toLocaleString('en-GB') : '-'}
             </div>
           </div>
@@ -1540,16 +2152,16 @@
         <table>
           <thead>
             <tr>
-              <th class="sortable" data-sort-key="date">Event Time${sortIndicator('date')}</th>
-              <th class="sortable" data-sort-key="name">Selection${sortIndicator('name')}</th>
-              <th class="sortable" data-sort-key="site">Site${sortIndicator('site')}</th>
-              <th class="sortable" data-sort-key="type">Type${sortIndicator('type')}</th>
-              <th class="sortable" data-sort-key="points">Pts${sortIndicator('points')}</th>
-              <th class="sortable" data-sort-key="stake">Stake${sortIndicator('stake')}</th>
-              <th class="sortable" data-sort-key="return">Return${sortIndicator('return')}</th>
-              <th class="sortable" data-sort-key="odds">Odds${sortIndicator('odds')}</th>
-              <th class="sortable" data-sort-key="status">Status${sortIndicator('status')}</th>
-              <th class="sortable" data-sort-key="profit">P/L${sortIndicator('profit')}</th>
+              <th class="sortable" tabindex="0" role="button" data-sort-key="date">Event Time${sortIndicator('date')}</th>
+              <th class="sortable" tabindex="0" role="button" data-sort-key="name">Selection${sortIndicator('name')}</th>
+              <th class="sortable" tabindex="0" role="button" data-sort-key="site">Site${sortIndicator('site')}</th>
+              <th class="sortable" tabindex="0" role="button" data-sort-key="type">Type${sortIndicator('type')}</th>
+              <th class="sortable" tabindex="0" role="button" data-sort-key="points">Pts${sortIndicator('points')}</th>
+              <th class="sortable" tabindex="0" role="button" data-sort-key="stake">Stake${sortIndicator('stake')}</th>
+              <th class="sortable" tabindex="0" role="button" data-sort-key="return">Return${sortIndicator('return')}</th>
+              <th class="sortable" tabindex="0" role="button" data-sort-key="odds">Odds${sortIndicator('odds')}</th>
+              <th class="sortable" tabindex="0" role="button" data-sort-key="status">Status${sortIndicator('status')}</th>
+              <th class="sortable" tabindex="0" role="button" data-sort-key="profit">P/L${sortIndicator('profit')}</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -1585,7 +2197,12 @@
       ctx.clearRect(0, 0, width, height);
 
       const points = getChartSeries();
-      ctx.fillStyle = '#f9fafb';
+      const styles = getComputedStyle(document.body);
+      const textColor = styles.getPropertyValue('--text').trim() || '#f9fafb';
+      const mutedColor = styles.getPropertyValue('--muted').trim() || '#9ca3af';
+      const accentColor = styles.getPropertyValue('--accent').trim() || '#22c55e';
+
+      ctx.fillStyle = textColor;
       ctx.font = '12px Arial';
 
       if (points.length < 2) {
@@ -1601,7 +2218,7 @@
       const plotWidth = width - padding.left - padding.right;
       const plotHeight = height - padding.top - padding.bottom;
 
-      ctx.strokeStyle = 'rgba(156, 163, 175, 0.35)';
+      ctx.strokeStyle = mutedColor;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(padding.left, padding.top);
@@ -1609,13 +2226,13 @@
       ctx.lineTo(width - padding.right, height - padding.bottom);
       ctx.stroke();
 
-      ctx.fillStyle = '#9ca3af';
+      ctx.fillStyle = mutedColor;
       ctx.fillText(formatMoney(max), 6, padding.top + 4);
       ctx.fillText(formatMoney(min), 6, height - padding.bottom);
 
       ctx.beginPath();
       ctx.lineWidth = 2;
-      ctx.strokeStyle = '#f9fafb';
+      ctx.strokeStyle = textColor;
       points.forEach((point, index) => {
         const x = padding.left + (index / (points.length - 1)) * plotWidth;
         const y = padding.top + (1 - ((point.value - min) / range)) * plotHeight;
@@ -1624,7 +2241,7 @@
       });
       ctx.stroke();
 
-      ctx.fillStyle = '#22c55e';
+      ctx.fillStyle = accentColor;
       points.forEach((point, index) => {
         const x = padding.left + (index / (points.length - 1)) * plotWidth;
         const y = padding.top + (1 - ((point.value - min) / range)) * plotHeight;
@@ -1633,7 +2250,7 @@
         ctx.fill();
       });
 
-      ctx.fillStyle = '#9ca3af';
+      ctx.fillStyle = mutedColor;
       ctx.fillText(points[0].label, padding.left, height - 8);
       ctx.fillText(points[points.length - 1].label, width - padding.right - 80, height - 8);
     }
@@ -1681,7 +2298,9 @@
         stakeEnteredManually: getEnteredStakeAmount() !== null
       });
 
-      siteBalance.current += profit;
+      const balanceImpact = calcBalanceImpact({ stake, odds, status, profit, isManualOverride: false }, status);
+      state.bets[state.bets.length - 1].balanceImpact = balanceImpact;
+      siteBalance.current += balanceImpact;
       saveState();
       clearBetForm();
       renderAll();
@@ -1709,14 +2328,21 @@
       const siteBalance = ensureSiteBalance(bet.site);
       if (!siteBalance) return;
 
-      siteBalance.current -= toNumber(bet.profit);
+      const oldImpact = typeof bet.balanceImpact === 'number'
+        ? bet.balanceImpact
+        : calcBalanceImpact(bet, bet.status);
+
       bet.status = newStatus;
-      bet.profit = calcProfit(bet.stake, bet.odds, newStatus);
       bet.isManualOverride = false;
-      siteBalance.current += bet.profit;
+      bet.profit = calcProfit(bet.stake, bet.odds, newStatus);
+
+      const newImpact = calcBalanceImpact(bet, newStatus);
+      bet.balanceImpact = newImpact;
+
+      siteBalance.current -= oldImpact;
+      siteBalance.current += newImpact;
 
       saveState();
-      refreshActiveSiteSelects();
       renderAll();
     }
 
@@ -1733,14 +2359,19 @@
       const value = Number(input);
       if (!Number.isFinite(value)) return alert('Please enter a valid number.');
 
-      siteBalance.current -= toNumber(bet.profit);
+      const oldImpact = typeof bet.balanceImpact === 'number'
+        ? bet.balanceImpact
+        : calcBalanceImpact(bet, bet.status);
+
       bet.profit = value;
       bet.isManualOverride = true;
       bet.status = value === 0 ? 'moneyback' : (value < 0 ? 'loss' : 'win');
+      bet.balanceImpact = value;
+
+      siteBalance.current -= oldImpact;
       siteBalance.current += value;
 
       saveState();
-      refreshActiveSiteSelects();
       renderAll();
     }
 
@@ -1749,7 +2380,12 @@
       if (!bet) return;
 
       const siteBalance = ensureSiteBalance(bet.site);
-      if (siteBalance) siteBalance.current -= toNumber(bet.profit);
+      if (siteBalance) {
+        const oldImpact = typeof bet.balanceImpact === 'number'
+          ? bet.balanceImpact
+          : calcBalanceImpact(bet, bet.status);
+        siteBalance.current -= oldImpact;
+      }
 
       state.bets.splice(index, 1);
       saveState();
@@ -1843,6 +2479,8 @@
       state.pendingStatusIndex = index;
       els.statusModalSubtitle.textContent = `${bet.name || 'This bet'} — current status: ${bet.status === 'moneyback' ? 'MB' : bet.status}`;
       els.statusModal.classList.add('open');
+      const firstStatusButton = els.statusModal.querySelector('[data-modal-status]');
+      if (firstStatusButton) firstStatusButton.focus();
     }
 
     function closeStatusModal() {
@@ -1906,9 +2544,54 @@
       }
     }
 
+
+    function handleTableKeydown(event) {
+      const sortHeader = event.target.closest('[data-sort-key]');
+      if (!sortHeader) return;
+
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        setBetSort(sortHeader.getAttribute('data-sort-key'));
+      }
+    }
+
+
+    function toggleDashboardCard(cardId) {
+      const card = document.getElementById(cardId);
+      if (!card) return;
+
+      const button = card.querySelector('[data-collapse-target]');
+      const isCollapsed = !card.classList.contains('is-collapsed');
+
+      card.classList.toggle('is-collapsed', isCollapsed);
+
+      if (button) {
+        button.textContent = isCollapsed ? 'Expand' : 'Minimise';
+        button.setAttribute('aria-expanded', String(!isCollapsed));
+      }
+
+      localStorage.setItem(`bet_tracker_card_${cardId}`, isCollapsed ? 'collapsed' : 'expanded');
+    }
+
+    function restoreDashboardCardStates() {
+      ['siteBalanceCard', 'pointCalculatorCard'].forEach((cardId) => {
+        const card = document.getElementById(cardId);
+        if (!card) return;
+
+        const button = card.querySelector('[data-collapse-target]');
+        const isCollapsed = localStorage.getItem(`bet_tracker_card_${cardId}`) === 'collapsed';
+        card.classList.toggle('is-collapsed', isCollapsed);
+
+        if (button) {
+          button.textContent = isCollapsed ? 'Expand' : 'Minimise';
+          button.setAttribute('aria-expanded', String(!isCollapsed));
+        }
+      });
+    }
+
     function switchTab(tabName) {
       state.activeTab = tabName;
-      els.tabButtons.forEach((button) => {
+els.tabButtons.forEach((button) => {
         button.classList.toggle('active', button.dataset.tab === tabName);
       });
       els.tabPages.forEach((page) => {
@@ -1920,12 +2603,177 @@
       }
     }
 
+
+    function getSettledBets() {
+      return state.bets.filter((bet) => bet.status !== 'pending');
+    }
+
+    function getWinRatePercent(bets) {
+      const settled = bets.filter((bet) => bet.status !== 'pending');
+      if (!settled.length) return 0;
+      const wins = settled.filter((bet) => bet.status === 'win').length;
+      return (wins / settled.length) * 100;
+    }
+
+    function renderPerformanceSummary() {
+      if (!els.performanceSummary) return;
+
+      const settled = getSettledBets();
+      const totalBets = state.bets.length;
+      const settledCount = settled.length;
+      const winRate = getWinRatePercent(state.bets);
+      const totalSettledStake = settled.reduce((sum, bet) => sum + toNumber(bet.stake), 0);
+      const averageStake = settledCount ? totalSettledStake / settledCount : 0;
+      const averagePoints = settledCount
+        ? settled.reduce((sum, bet) => sum + toNumber(bet.points), 0) / settledCount
+        : 0;
+      const actualPL = getActualProfitLoss();
+
+      const biggestWin = settled.reduce((best, bet) => Math.max(best, toNumber(bet.balanceImpact ?? bet.profit)), 0);
+      const biggestLoss = settled.reduce((worst, bet) => Math.min(worst, toNumber(bet.balanceImpact ?? bet.profit)), 0);
+
+      els.performanceSummary.innerHTML = `
+        <div class="summary-grid">
+          <div class="summary-item">
+            <div class="summary-label">Total Bets</div>
+            <div class="summary-value">${totalBets}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Settled Bets</div>
+            <div class="summary-value">${settledCount}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Win Rate</div>
+            <div class="summary-value">${formatPercent(winRate)}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Average Stake</div>
+            <div class="summary-value">${formatMoney(averageStake)}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Average Points</div>
+            <div class="summary-value">${averagePoints.toFixed(1)}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Actual P/L</div>
+            <div class="summary-value ${actualPL < 0 ? 'loss' : 'profit'}">${formatMoney(actualPL)}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Biggest Win</div>
+            <div class="summary-value profit">${formatMoney(biggestWin)}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Biggest Loss</div>
+            <div class="summary-value loss">${formatMoney(biggestLoss)}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBookmakerBreakdown() {
+      if (!els.bookmakerBreakdown) return;
+
+      const map = {};
+
+      state.bets.forEach((bet) => {
+        if (!bet.site) return;
+
+        if (!map[bet.site]) {
+          map[bet.site] = {
+            site: bet.site,
+            bets: 0,
+            settled: 0,
+            wins: 0,
+            losses: 0,
+            moneyback: 0,
+            active: 0,
+            staked: 0,
+            activeStake: 0,
+            profit: 0
+          };
+        }
+
+        const row = map[bet.site];
+        row.bets += 1;
+
+        if (bet.status === 'pending') {
+          row.active += 1;
+          row.activeStake += toNumber(bet.stake);
+          return;
+        }
+
+        row.settled += 1;
+        row.staked += toNumber(bet.stake);
+
+        if (bet.status === 'win') row.wins += 1;
+        if (bet.status === 'loss') row.losses += 1;
+        if (bet.status === 'moneyback') row.moneyback += 1;
+
+        const impact = typeof bet.balanceImpact === 'number'
+          ? bet.balanceImpact
+          : calcBalanceImpact(bet, bet.status);
+
+        row.profit += impact;
+      });
+
+      const rows = Object.values(map)
+        .sort((a, b) => b.profit - a.profit)
+        .map((row) => {
+          const roi = row.staked > 0 ? (row.profit / row.staked) * 100 : 0;
+          const winRate = row.settled > 0 ? (row.wins / row.settled) * 100 : 0;
+          const profitClass = row.profit < 0 ? 'loss' : row.profit > 0 ? 'profit' : '';
+
+          return `
+            <tr>
+              <td>${escapeHtml(row.site)}</td>
+              <td>${row.bets}</td>
+              <td>${row.active}</td>
+              <td>${row.wins}/${row.losses}/${row.moneyback}</td>
+              <td>${formatPercent(winRate)}</td>
+              <td>${formatMoney(row.staked)}</td>
+              <td>${formatMoney(row.activeStake)}</td>
+              <td class="${profitClass}">${formatMoney(row.profit)}</td>
+              <td class="${roi < 0 ? 'loss' : 'profit'}">${formatPercent(roi)}</td>
+            </tr>
+          `;
+        })
+        .join('');
+
+      if (!rows) {
+        els.bookmakerBreakdown.innerHTML = '<div class="empty">No bookmaker data yet.</div>';
+        return;
+      }
+
+      els.bookmakerBreakdown.innerHTML = `
+        <div class="analytics-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Bookmaker</th>
+                <th>Bets</th>
+                <th>Act.</th>
+                <th>W/L/MB</th>
+                <th>Win %</th>
+                <th>Staked</th>
+                <th>Active £</th>
+                <th>P/L</th>
+                <th>ROI</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
     function renderAll() {
       renderStats();
       renderSiteBalances();
       renderActiveTable();
       renderTable();
       renderChart();
+      renderPerformanceSummary();
+      renderBookmakerBreakdown();
       updateQuickStake();
       updateBetPreview();
       updateRequiredIndicators();
@@ -1963,6 +2811,11 @@
         { name: 'moneyback profit is zero', pass: calcProfit(10, 3, 'moneyback') === 0 },
         { name: 'moneyback status displays as MB', pass: 'MB' === 'MB' },
         { name: 'potential return excludes stake', pass: calcPotentialReturn({ stake: 10, odds: 3 }) === 20 },
+        { name: 'pending stake reserves balance', pass: calcBalanceImpact({ stake: 10, odds: 3, status: 'pending' }) === -10 },
+        { name: 'active stake sums pending only', pass: (() => { const old = state.bets; state.bets = [{ status: 'pending', stake: 5, odds: 3 }, { status: 'win', stake: 10, odds: 2 }]; const ok = getActiveStakeValue() === 5; state.bets = old; return ok; })() },
+        { name: 'roi is actual profit over settled stake', pass: (() => { const old = state.bets; state.bets = [{ status: 'win', stake: 10, odds: 2, balanceImpact: 10 }]; const ok = getRoiPercent() === 100; state.bets = old; return ok; })() },
+        { name: 'win rate helper works', pass: (() => { const old = state.bets; state.bets = [{ status: 'win' }, { status: 'loss' }, { status: 'pending' }]; const ok = getWinRatePercent(state.bets) === 50; state.bets = old; return ok; })() },
+        { name: 'moneyback restores stake net zero', pass: calcBalanceImpact({ stake: 10, odds: 3, status: 'moneyback' }) === 0 },
         { name: 'sort indicator returns string', pass: typeof sortIndicator('date') === 'string' },
         { name: 'status modal starts closed', pass: state.pendingStatusIndex === null },
         { name: 'edit state starts inactive', pass: state.editingBetIndex === null },
@@ -2005,6 +2858,17 @@
     }
 
     function initEvents() {
+
+      const dashboardCollapseClickHandler = (event) => {
+        const button = event.target.closest('[data-collapse-target]');
+        if (!button) return;
+        event.preventDefault();
+        event.stopPropagation();
+        toggleDashboardCard(button.getAttribute('data-collapse-target'));
+      };
+
+      document.addEventListener('click', dashboardCollapseClickHandler);
+
       els.tabButtons.forEach((button) => {
         button.addEventListener('click', () => switchTab(button.dataset.tab));
       });
@@ -2059,6 +2923,7 @@
       });
 
       els.tableWrap.addEventListener('click', handleTableClick);
+      els.tableWrap.addEventListener('keydown', handleTableKeydown);
 
       els.betSearch.addEventListener('input', () => {
         state.betSearch = els.betSearch.value;
@@ -2127,14 +2992,43 @@
     function init() {
       runSelfTests();
       loadState();
+      state.activeTab = 'dashboard';
+      migratePendingStakeReservations();
       initSites();
       initPointSelect();
       initPointButtons();
       initEvents();
+      restoreDashboardCardStates();
       renderAll();
     }
 
     init();
+  </script>
+
+  <script>
+    (function initThemeToggle() {
+      const button = document.getElementById('themeToggleBtn');
+      if (!button) return;
+
+      function setTheme(isLight) {
+        document.body.classList.toggle('light-mode', isLight);
+        button.setAttribute('aria-label', isLight ? 'Switch to dark mode' : 'Switch to light mode');
+        button.setAttribute('aria-pressed', String(isLight));
+        button.title = isLight ? 'Switch to dark mode' : 'Switch to light mode';
+
+        const canvas = document.getElementById('profitChart');
+        if (canvas && typeof renderChart === 'function') {
+          requestAnimationFrame(renderChart);
+        }
+      }
+
+      // Always start on the original dark v27 theme.
+      setTheme(false);
+
+      button.addEventListener('click', function () {
+        setTheme(!document.body.classList.contains('light-mode'));
+      });
+    })();
   </script>
 </body>
 </html>
