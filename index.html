@@ -992,9 +992,120 @@
       color: #ffffff !important;
     }
 
-</style>
+
+    .auth-screen {
+      min-height: calc(100vh - 48px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    body.auth-required .auth-screen {
+      display: flex;
+    }
+
+    body.auth-required main.container,
+    body.auth-required .container,
+    body.auth-required .modal-overlay,
+    body.auth-required .status-modal-overlay {
+      display: none !important;
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(17, 24, 39, 0.95);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+    }
+
+    body.light-mode .auth-card {
+      background: #dbeafe;
+    }
+
+    .auth-card h1 {
+      margin-bottom: 6px;
+    }
+
+    .auth-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .auth-message {
+      min-height: 20px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .auth-message.error {
+      color: var(--danger);
+    }
+
+    .auth-message.success {
+      color: var(--accent);
+    }
+
+    .app-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .app-user-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .app-user-bar button {
+      width: auto;
+      padding: 7px 10px;
+      font-size: 12px;
+    }
+
+  </style>
 </head>
-<body>
+<body class="auth-required">
+
+  <section class="auth-screen" id="authScreen" aria-label="Login required">
+    <div class="auth-card">
+      <h1>Betting Tracker</h1>
+      <div class="subtitle">Sign in to access your tracker.</div>
+
+      <div class="form-grid">
+        <div class="full">
+          <label for="authEmail">Email</label>
+          <input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com" />
+        </div>
+
+        <div class="full">
+          <label for="authPassword">Password</label>
+          <input id="authPassword" type="password" autocomplete="current-password" placeholder="Password" />
+        </div>
+      </div>
+
+      <div class="auth-actions">
+        <button type="button" class="primary" id="signInBtn">Sign In</button>
+        <button type="button" class="secondary" id="signUpBtn">Create Account</button>
+      </div>
+
+      <div class="auth-message" id="authMessage" aria-live="polite"></div>
+    </div>
+  </section>
+
 
   <button type="button" class="theme-toggle" id="themeToggleBtn" aria-label="Switch to light mode" title="Switch to light mode">
     <svg class="sun-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -1014,8 +1125,16 @@
   </button>
 
   <main class="container">
-    <h1>Betting Tracker</h1>
-    <div class="subtitle">Each bookmaker has its own bankroll. Points use that bookmaker’s available balance, with pending stakes reserved until settled.</div>
+    <div class="app-header">
+      <div>
+        <h1>Betting Tracker</h1>
+        <div class="subtitle">Each bookmaker has its own bankroll. Points use that bookmaker’s available balance, with pending stakes reserved until settled.</div>
+      </div>
+      <div class="app-user-bar">
+        <span id="signedInEmail"></span>
+        <button type="button" class="secondary" id="signOutBtn">Sign Out</button>
+      </div>
+    </div>
 
     <div class="stats-row">
       <div class="card">
@@ -1333,8 +1452,13 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
     const storageKey = 'betting_tracker_v11';
+    const supabaseUrl = 'https://rlcufdwbxfcffbkwtpck.supabase.co';
+    const supabaseAnonKey = 'sb_publishable_2iNyCiLPyGvc9QD57e52iQ_Fg-GXRMM';
+    const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
     const sites = [
       'Bet365', 'William Hill', 'Ladbrokes', 'Coral', 'Betfair', 'Paddy Power',
@@ -1362,7 +1486,8 @@
         direction: 'desc'
       },
       editingBetIndex: null,
-      pendingStatusIndex: null
+      pendingStatusIndex: null,
+      currentUser: null
     };
 
     const els = {
@@ -1420,7 +1545,15 @@
       clearModal: document.getElementById('clearModal'),
       confirmClearInput: document.getElementById('confirmClearInput'),
       confirmClearBtn: document.getElementById('confirmClearBtn'),
-      cancelClearBtn: document.getElementById('cancelClearBtn')
+      cancelClearBtn: document.getElementById('cancelClearBtn'),
+      authScreen: document.getElementById('authScreen'),
+      authEmail: document.getElementById('authEmail'),
+      authPassword: document.getElementById('authPassword'),
+      signInBtn: document.getElementById('signInBtn'),
+      signUpBtn: document.getElementById('signUpBtn'),
+      signOutBtn: document.getElementById('signOutBtn'),
+      authMessage: document.getElementById('authMessage'),
+      signedInEmail: document.getElementById('signedInEmail')
     };
 
     function formatMoney(value) {
@@ -1688,6 +1821,132 @@
         saveState();
       }
     }
+
+
+    function setAuthMessage(message, type = '') {
+      els.authMessage.textContent = message || '';
+      els.authMessage.classList.remove('error', 'success');
+      if (type) els.authMessage.classList.add(type);
+    }
+
+    function setAuthLoading(isLoading) {
+      els.signInBtn.disabled = isLoading;
+      els.signUpBtn.disabled = isLoading;
+      els.signOutBtn.disabled = isLoading;
+    }
+
+    function showLogin() {
+      state.currentUser = null;
+      document.body.classList.add('auth-required');
+      if (els.signedInEmail) els.signedInEmail.textContent = '';
+      setAuthLoading(false);
+    }
+
+    async function showApp(user) {
+      state.currentUser = user;
+      document.body.classList.remove('auth-required');
+      if (els.signedInEmail) els.signedInEmail.textContent = user && user.email ? user.email : '';
+      setAuthLoading(false);
+
+      loadState();
+      state.activeTab = 'dashboard';
+      if (typeof migratePendingStakeReservations === 'function') migratePendingStakeReservations();
+      initSites();
+      if (typeof restoreDashboardCardStates === 'function') restoreDashboardCardStates();
+      renderAll();
+    }
+
+    async function checkSession() {
+      const { data, error } = await supabaseClient.auth.getSession();
+
+      if (error) {
+        console.error(error);
+        setAuthMessage(error.message, 'error');
+        showLogin();
+        return;
+      }
+
+      if (data.session && data.session.user) {
+        await showApp(data.session.user);
+      } else {
+        showLogin();
+      }
+    }
+
+    async function signIn() {
+      const email = els.authEmail.value.trim();
+      const password = els.authPassword.value;
+
+      if (!email || !password) {
+        setAuthMessage('Enter your email and password.', 'error');
+        return;
+      }
+
+      setAuthLoading(true);
+      setAuthMessage('Signing in...');
+
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        setAuthLoading(false);
+        setAuthMessage(error.message, 'error');
+        return;
+      }
+
+      if (data.user) {
+        setAuthMessage('');
+        await showApp(data.user);
+      }
+    }
+
+    async function signUp() {
+      const email = els.authEmail.value.trim();
+      const password = els.authPassword.value;
+
+      if (!email || !password) {
+        setAuthMessage('Enter your email and password.', 'error');
+        return;
+      }
+
+      if (password.length < 6) {
+        setAuthMessage('Password must be at least 6 characters.', 'error');
+        return;
+      }
+
+      setAuthLoading(true);
+      setAuthMessage('Creating account...');
+
+      const { data, error } = await supabaseClient.auth.signUp({ email, password });
+
+      setAuthLoading(false);
+
+      if (error) {
+        setAuthMessage(error.message, 'error');
+        return;
+      }
+
+      if (data.session && data.user) {
+        setAuthMessage('');
+        await showApp(data.user);
+        return;
+      }
+
+      setAuthMessage('Account created. Check your email to confirm your account, then sign in.', 'success');
+    }
+
+    async function signOut() {
+      setAuthLoading(true);
+      const { error } = await supabaseClient.auth.signOut();
+
+      if (error) {
+        setAuthLoading(false);
+        alert(error.message);
+        return;
+      }
+
+      showLogin();
+    }
+
 
     function saveState() {
       localStorage.setItem(storageKey, JSON.stringify(state));
@@ -2873,6 +3132,16 @@ els.tabButtons.forEach((button) => {
         button.addEventListener('click', () => switchTab(button.dataset.tab));
       });
 
+      els.signInBtn.addEventListener('click', signIn);
+      els.signUpBtn.addEventListener('click', signUp);
+      els.signOutBtn.addEventListener('click', signOut);
+
+      [els.authEmail, els.authPassword].forEach((input) => {
+        input.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter') signIn();
+        });
+      });
+
       els.setSiteBalanceBtn.addEventListener('click', setSiteBalance);
       els.quickSite.addEventListener('change', updateQuickStake);
       els.quickPoints.addEventListener('input', updateQuickStake);
@@ -2990,16 +3259,19 @@ els.tabButtons.forEach((button) => {
     }
 
     function init() {
-      runSelfTests();
-      loadState();
-      state.activeTab = 'dashboard';
-      migratePendingStakeReservations();
-      initSites();
       initPointSelect();
       initPointButtons();
       initEvents();
-      restoreDashboardCardStates();
-      renderAll();
+
+      supabaseClient.auth.onAuthStateChange((_event, session) => {
+        if (session && session.user) {
+          showApp(session.user);
+        } else {
+          showLogin();
+        }
+      });
+
+      checkSession();
     }
 
     init();
