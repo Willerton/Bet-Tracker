@@ -1857,7 +1857,9 @@
         odds_raw: bet.oddsRaw,
         odds: toNumber(bet.odds),
         status: bet.status,
-        event_datetime: bet.date ? new Date(bet.date).toISOString() : null,
+        // Store the local event clock time exactly as entered.
+        // Do not use new Date(...).toISOString(), because that converts to UTC and shifts the visible time on reload.
+        event_datetime: bet.date ? `${bet.date}:00` : null,
         profit: toNumber(bet.profit),
         balance_impact: typeof bet.balanceImpact === 'number'
           ? toNumber(bet.balanceImpact)
